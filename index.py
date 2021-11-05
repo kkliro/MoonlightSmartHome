@@ -12,7 +12,7 @@ import time
 import board
 import adafruit_dht
 
-dhtDevice = adafruit_dht.DHT11(board.D24)
+dhtDevice = adafruit_dht.DHT11(board.D19)
 
 GPIO.setwarnings(False)
 
@@ -24,49 +24,25 @@ lastTemperature = 0
 currentTemp = 0
 
 def ConfigureLED(ledStatus):
-    GPIO.output(LED, ledStatus)
-    
+    GPIO.output(LED, ledStatus)  
+        
 def GetTemp():
-    while True:
-        try:
-             # Print the values to the serial port
-             temperature_c = dhtDevice.temperature
-             currentTemp = temperature_c
-             DisplayTemp()
-             print(currentTemp)
-             #temperature_f = temperature_c * (9 / 5) + 32
-             #humidity = dhtDevice.humidity
-             #print("Temp: {:.1f} F / {:.1f} C    Humidity: {}% "
-                   #.format(temperature_f, temperature_c, humidity))
-        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
-             print(error.args[0])
-        time.sleep(2.0)
-    
-
-def DisplayTemp():
-    return go.Indicator(
-    mode = "gauge+number+delta",
-    value = currentTemp,
-    domain = {'x': [0, 1], 'y': [0, 1]},
-    title = {'text': "Temperature",'font': {'size': 24}},
-    delta = {'reference': lastTemperature, 'increasing': {'color': "RebeccaPurple"} },
-    gauge = {'axis': {'range': [-30, 30], 'tickwidth': 1, 'tickcolor': "darkblue"},
-            'bar': {'color': "darkblue"},
-            'bgcolor': "red",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-             'steps': [
-            {'range': [-30, -10], 'color': 'cyan'},
-            {'range': [-10, 10], 'color': 'royalblue'}],
-            'threshold': {
-            'line': {'color': "red", 'width': 4},
-            'thickness': 0.75,
-            'value': 490}})
+    try:
+        # Print the values to the serial port
+        currentTemp = lastTemperature
+        temperature_c = dhtDevice.temperature
+        currentTemp = temperature_c
+        #DisplayTemp()
+        print(currentTemp)
+        #temperature_f = temperature_c * (9 / 5) + 32
+        #humidity = dhtDevice.humidity
+        #print("Temp: {:.1f} F / {:.1f} C    Humidity: {}% "
+        #.format(temperature_f, temperature_c, humidity))
+    except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+        print(error.args[0])
 
 app = dash.Dash()
-fig = go.Figure(DisplayTemp())
 
-fig.update_layout(paper_bgcolor = "lavender", font = {'color': "darkblue", 'family': "Arial"})
 
 app.layout = html.Div([
     html.H1(children='Smart Home Security'),
@@ -79,9 +55,45 @@ app.layout = html.Div([
     
     html.Div(id="output-div"),
     
-    dcc.Graph(id='gauge',figure=fig),
+    dcc.Graph(id='gauge-temp'),
+    
+    dcc.Interval(
+        id='temp-interval',
+        interval=1*5000,
+        n_intervals=0
+    )
 
 ])
+
+@app.callback(
+    Output('gauge-temp', 'figure'),
+    [Input('temp-interval', 'n_intervals')]
+)
+def update_graph_live(n):
+    GetTemp()
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number+delta",
+        value = currentTemp,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        title = {'text': "Temperature",'font': {'size': 24}},
+        delta = {'reference': lastTemperature, 'increasing': {'color': "RebeccaPurple"} },
+        gauge = {'axis': {'range': [-30, 30], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                'bar': {'color': "darkblue"},
+                'bgcolor': "red",
+                'borderwidth': 2,
+                'bordercolor': "gray",
+                 'steps': [
+                {'range': [-30, -10], 'color': 'royalblue'},
+                {'range': [-10, 10], 'color': 'white'}],
+                'threshold': {
+                'line': {'color': "white", 'width': 4},
+                'thickness': 0.75,
+                'value': 29}}))
+    
+    fig.update_layout(paper_bgcolor = "lavender", font = {'color': "darkblue", 'family': "Arial"})
+    
+    return fig
+                
 
 @app.callback(
     [Output("output-div", "children")],
@@ -93,6 +105,7 @@ def on_Clicked(value):
     
     if value == None:
         #raise PreventUpdate
+        ConfigureLED(0)
         return [f"Light State: {lightOn}"]
     if value % 2 == 1:
         lightOn = "On"

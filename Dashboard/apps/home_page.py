@@ -12,6 +12,8 @@ from app import app
 
 # app = dash.Dash()
 
+led_status = 0
+
 layout = html.Div([
     html.H2(children="Home Page"),
 
@@ -61,7 +63,9 @@ def on_interval_update(v):
 )
 def on_clicked(n_clicks):
     light_state = "OFF"
-    led_status = 0
+    global led_status
+    
+    #led_status = 0
     
     if (n_clicks != None):
         led_status = n_clicks % 2        

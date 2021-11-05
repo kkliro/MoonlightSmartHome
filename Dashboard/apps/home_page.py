@@ -8,6 +8,7 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
+from apps import temperature_page
 #from utils import led, temperature
 
 # app = dash.Dash()
@@ -62,6 +63,8 @@ def on_interval_update(v):
     ]
 )
 def on_clicked(n_clicks):
+    print(temperature_page.temperature_threshold)
+    
     light_state = "OFF"
     global led_status
     

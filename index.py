@@ -12,7 +12,7 @@ import time
 import board
 import adafruit_dht
 
-dhtDevice = adafruit_dht.DHT11(board.D25)
+dhtDevice = adafruit_dht.DHT11(board.D20)
 
 GPIO.setwarnings(False)
 
@@ -81,13 +81,13 @@ app.layout = html.Div([
     
     dcc.Interval(
         id='temp-interval',
-        interval=1*1000,
+        interval=1*10000,
         n_intervals=0
     ),
     
     dcc.Interval(
         id='hum-interval',
-        interval=1*1000,
+        interval=1*10000,
         n_intervals=0
     )
 
@@ -174,4 +174,4 @@ def on_Clicked(value):
     
 
 
-app.run_server(debug=True)
+app.run_server(debug=False)

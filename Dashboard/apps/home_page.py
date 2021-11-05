@@ -12,14 +12,11 @@ from app import app
 
 # app = dash.Dash()
 
-temperature = 0
-humidity = 0
-
 layout = html.Div([
     html.H2(children="Home Page"),
 
     html.Div(id='led-container', children=[
-        html.P(id="led-status"),
+        html.P(id="led-status", children='Light State: OFF'),
 
         html.Button('Toggle Light', id='change-led-status'),
     ]),
@@ -46,22 +43,28 @@ layout = html.Div([
 def on_interval_update(v):
     #temperature = temperature.get_temp()
     #humidity = temperature.get_humidity()
+    #temperature = app.temperature
+    #humidity = app.humidity
 
     return [
-        [f"Temperature: {temperature}"], 
-        [f"Humidity: {humidity}"]
+        [f"Temperature: {0}"], 
+        [f"Humidity: {0}"]
     ]
 
 @app.callback(
-    [Output("led-status", "children")],
-    [Input("change-led-status", "n_clicks")]
+    [
+        Output("led-status", "children"),
+    ],
+    [
+        Input("change-led-status", "n_clicks"), 
+    ]
 )
-def on_clicked(value):
-    light_state = "OFF"   
+def on_clicked(n_clicks):
+    light_state = "OFF"
     led_status = 0
     
-    if (value != None):
-        led_status = value % 2        
+    if (n_clicks != None):
+        led_status = n_clicks % 2        
 
     if led_status == 1:
         light_state = "ON"

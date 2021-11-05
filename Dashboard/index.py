@@ -9,6 +9,10 @@ from app import server
 # Connect to your app pages
 from apps import home_page, temperature_page
 
+led_status = 0
+
+temperature = 0
+humidity = 0
 
 app.layout = html.Div([
     html.H1(children='Smart Home Security'),
@@ -21,7 +25,9 @@ app.layout = html.Div([
             dcc.Link('Temperature', href='/apps/temperature_page'),
         ], className="col")
     ], className="row"),
-    html.Div(id='page-content', children=[])
+    html.Div(id='page-content', children=[]),
+    
+    dcc.Store('led-state-store', storage_type='local'),
 ])
 
 

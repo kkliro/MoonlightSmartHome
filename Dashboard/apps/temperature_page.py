@@ -7,21 +7,52 @@ from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 
 from app import app
+from utils import temperature
 
 # app = dash.Dash()
 
+temperature_threshold = 20;
+
 layout = html.Div([
     html.H2(children="Temperature"),
+    
+    html.P(id='threshold-display', children=f"Temperature Threshold: {temperature_threshold}"),
+    
+    dcc.Input(id='threshold-input', type='text', placeholder='Temperature Threshold'),
+    #html.Button('Update Threshold', id='change-threshold'),
+    
 
     dcc.Graph(id='gauge-temp'),
     dcc.Graph(id='gauge-hum'),
     
     dcc.Interval(
         id='temperature-interval',
-        interval=1*5000,
+        interval=1*5000, # 5 seconds
         n_intervals=0
     )
 ])
+
+@app.callback(
+    [
+        Output("threshold-display", "children"),
+    ],
+    [
+        #Input("change-threshold", "n_clicks"),
+        Input("threshold-input", "value"), 
+    ]
+)
+def update_threshold(value):
+    global temperature_threshold
+    
+    if value != None:    
+        try:
+            newValue = float(value)
+            if abs(newValue) <= 30 :
+                temperature_threshold = newValue
+        except ValueError:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("Not a float")
+
+    return [f"Temperature Threshold: {temperature_threshold}"]
 
 @app.callback(
     [
@@ -31,9 +62,14 @@ layout = html.Div([
     [Input('temperature-interval', 'n_intervals')]
 )
 def on_interval_update_graphs(v):
+    #temperature_read = temperature.get_temp();
+    #humidity_read = temperature.get_humidity();
+    temperature_read = 20;
+    humidity_read = 50;
+    
     temp_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
-        value = 0,
+        value = temperature_read,
         domain = {'x': [0, 1], 'y': [0, 1]},
         title = {'text': "Temperature",'font': {'size': 24}},
         delta = {'reference': 0, 'increasing': {'color': "RebeccaPurple"} },
@@ -48,11 +84,11 @@ def on_interval_update_graphs(v):
                 'threshold': {
                 'line': {'color': "white", 'width': 4},
                 'thickness': 0.75,
-                'value': 29}}))
+                'value': temperature_threshold}}))
 
     hum_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
-        value = 0,
+        value = humidity_read,
         domain = {'x': [0, 1], 'y': [0, 1]},
         title = {'text': "Humidity",'font': {'size': 24}},
         delta = {'reference': 0, 'increasing': {'color': "RebeccaPurple"} },

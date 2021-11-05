@@ -6,6 +6,14 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 
+import RPi.GPIO as GPIO
+
+GPIO.setwarnings(False)
+
+GPIO.setmode(GPIO.BCM)
+LED = 23
+GPIO.setup(LED, GPIO.OUT)
+
 app = dash.Dash()
 fig = go.Figure(go.Indicator(
     mode = "gauge+number+delta",
@@ -49,14 +57,18 @@ app.layout = html.Div([
 )
 def on_Clicked(value):
     lightOn = "Off"
+    circuitPass = 0
+    
     if value == None:
-        raise PreventUpdate
+        #raise PreventUpdate
+        return [f"Light State: {lightOn}"]
     if value % 2 == 1:
         lightOn = "On"
-    ConfigureLED()
+        circuitPass = 1
+    ConfigureLED(circuitPass)
     return [f"Light State: {lightOn}"]
 
-def ConfigureLED():
-    print("Hello World!")
+def ConfigureLED(ledStatus):
+    GPIO.output(LED, ledStatus)    
 
 app.run_server(debug=True)

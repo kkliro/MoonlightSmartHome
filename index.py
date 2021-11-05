@@ -53,6 +53,10 @@ def on_Clicked(value):
         raise PreventUpdate
     if value % 2 == 1:
         lightOn = "On"
+    ConfigureLED()
     return [f"Light State: {lightOn}"]
+
+def ConfigureLED():
+    print("Hello World!")
 
 app.run_server(debug=True)

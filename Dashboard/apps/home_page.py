@@ -8,39 +8,52 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
-from utils import led
+#from utils import led
 
 # app = dash.Dash()
+
+temperature = 0
+humidity = 0
 
 layout = html.Div([
     html.H2(children="Home Page"),
 
-    html.P(id="led-status"),
+    html.Div(id='led-container', children=[
+        html.P(id="led-status"),
 
-    html.Button('Toggle Light', id='change-led-status'),
+        html.Button('Toggle Light', id='change-led-status'),
+    ]),
 
-    # dcc.Interval(
-    #     id='led-interval',
-    #     interval=1*500,
-    #     n_intervals=0
-    # ),
+    html.Div(id='temperature-container', children=[
+        html.P(id='temperature-value'),
+        html.P(id='humidity-value'),
+    ]),
+
+    dcc.Interval(
+        id='temperature-interval',
+        interval=1*1000,
+        n_intervals=0
+    ),
 ])
 
-# @app.callback(
-#     [Output('led-status', 'children')],
-#     [Input('led-interval', 'n_intervals')]
-# )
-# def update_status(v):
-#     lightState = "OFF"
-#     if (led_status == 1):
-#         lightState = "ON"
-#     return [f"Light State: {lightState}"]
+@app.callback(
+    [
+        Output('temperature-value', 'children'),
+        Output('humidity-value', 'children')
+    ],
+    [Input('temperature-interval', 'n_intervals')]
+)
+def on_interval_update(v):
+    return [
+        [f"Temperature: {temperature}"], 
+        [f"Humidity: {humidity}"]
+    ]
 
 @app.callback(
     [Output("led-status", "children")],
     [Input("change-led-status", "n_clicks")]
 )
-def on_Clicked(value):
+def on_clicked(value):
     light_state = "OFF"   
     led_status = 0
     

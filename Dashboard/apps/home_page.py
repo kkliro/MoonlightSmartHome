@@ -8,7 +8,7 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
-#from utils import led
+#from utils import led, temperature
 
 # app = dash.Dash()
 
@@ -44,6 +44,9 @@ layout = html.Div([
     [Input('temperature-interval', 'n_intervals')]
 )
 def on_interval_update(v):
+    #temperature = temperature.get_temp()
+    #humidity = temperature.get_humidity()
+
     return [
         [f"Temperature: {temperature}"], 
         [f"Humidity: {humidity}"]

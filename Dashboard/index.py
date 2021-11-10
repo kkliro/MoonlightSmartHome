@@ -7,7 +7,7 @@ from app import app
 from app import server
 
 # Connect to your app pages
-from apps import home_page, temperature
+from apps import home_page, temperature_page
 
 
 app.layout = html.Div([
@@ -18,7 +18,7 @@ app.layout = html.Div([
             dcc.Link('Home', href='/apps/home_page'),
         ], className="row"),
          html.Div([
-            dcc.Link('Temperature', href='/apps/temperature'),
+            dcc.Link('Temperature', href='/apps/temperature_page'),
         ], className="col")
     ], className="row"),
     html.Div(id='page-content', children=[])
@@ -30,8 +30,8 @@ app.layout = html.Div([
 def display_page(pathname):
     if pathname == '/apps/home_page':
         return home_page.layout
-    elif pathname == '/apps/temperature':
-        return temperature.layout
+    elif pathname == '/apps/temperature_page':
+        return temperature_page.layout
     else:
         return home_page.layout
 

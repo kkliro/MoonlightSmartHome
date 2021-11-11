@@ -52,6 +52,7 @@ def on_interval_update(v):
     global g_humidity
     
     _temperature = temperature.get_temp()
+    print(temperature.get_temp())
     _humidity = temperature.get_humidity()
     
     if _temperature != None:

@@ -4,7 +4,7 @@ import time
 import board
 import adafruit_dht
 
-dhtDevice = adafruit_dht.DHT11(board.D18)
+dhtDevice = adafruit_dht.DHT11(board.D25)
 
 def get_temp():
     try:

@@ -3,7 +3,7 @@ import dash
 from dash import dcc
 from dash import html
 
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 from app import app
@@ -25,7 +25,7 @@ layout = html.Div([
     html.P(id='threshold-display', children=f"Temperature Threshold: {temperature_threshold}"),
     
     dcc.Input(id='threshold-input', type='text', placeholder='Temperature Threshold'),
-    #html.Button('Update Threshold', id='change-threshold'),
+    html.Button('Update Threshold', id='change-threshold'),
     
 
     dcc.Graph(id='gauge-temp'),
@@ -43,11 +43,14 @@ layout = html.Div([
         Output("threshold-display", "children"),
     ],
     [
-        #Input("change-threshold", "n_clicks"),
-        Input("threshold-input", "value"), 
+        Input("change-threshold", "n_clicks"),
+        #Input("threshold-input", "value"), 
+    ],
+    [
+        State("threshold-input", "value")        
     ]
 )
-def update_threshold(value):
+def update_threshold(n_clicks, value):
     global temperature_threshold
     
     if value != None:    

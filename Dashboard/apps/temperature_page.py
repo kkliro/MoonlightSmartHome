@@ -10,11 +10,14 @@ from app import app
 
 from utils import email
 
-#from utils import temperature
+from utils import temperature
 
 # app = dash.Dash()
 
 temperature_threshold = 25.0
+
+g_temperature = [0,0]
+g_humidity = [0,0]
 
 layout = html.Div([
     html.H2(children="Temperature"),
@@ -65,15 +68,28 @@ def update_threshold(value):
     [Input('temperature-interval', 'n_intervals')]
 )
 def on_interval_update_graphs(v):
-    #temperature_read = temperature.get_temp();
-    #humidity_read = temperature.get_humidity();
-    temperature_read = 20;
-    humidity_read = 50;
+    global g_temperature
+    global g_humidity
+    
+    
+    temperature_read = temperature.get_temp();
+    humidity_read = temperature.get_humidity();
+    
+    if temperature_read != None:
+        g_temperature[1] = g_temperature[0]
+        g_temperature[0] = temperature_read
+        
+        if temperature_read > temperature_threshold:
+            email.send_email('Enable Fan', 'Would you like to turn on the fan?')
+        
+    if humidity_read != None:
+        g_humidity[1] = g_humidity[0]
+        g_humidity[0] = humidity_read
+    
+    #temperature_read = 20;
+    #humidity_read = 50;
 
     email.email_reader()
-
-    if temperature_read > temperature_threshold:
-        email.send_email('Enable Fan', 'Would you like to turn on the fan?')
 
     # elif temperature_read <= temperature_threshold:
     #     print("Send email asking to turn fan off")
@@ -81,10 +97,10 @@ def on_interval_update_graphs(v):
     
     temp_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
-        value = temperature_read,
+        value = g_temperature[0],
         domain = {'x': [0, 1], 'y': [0, 1]},
         title = {'text': "Temperature",'font': {'size': 24}},
-        delta = {'reference': 0, 'increasing': {'color': "RebeccaPurple"} },
+        delta = {'reference': g_temperature[1], 'increasing': {'color': "RebeccaPurple"} },
         gauge = {'axis': {'range': [-30, 30], 'tickwidth': 1, 'tickcolor': "darkblue"},
                 'bar': {'color': "darkblue"},
                 'bgcolor': "red",
@@ -100,10 +116,10 @@ def on_interval_update_graphs(v):
 
     hum_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
-        value = humidity_read,
+        value = g_humidity[0],
         domain = {'x': [0, 1], 'y': [0, 1]},
         title = {'text': "Humidity",'font': {'size': 24}},
-        delta = {'reference': 0, 'increasing': {'color': "RebeccaPurple"} },
+        delta = {'reference': g_humidity[1], 'increasing': {'color': "RebeccaPurple"} },
         gauge = {'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
                 'bar': {'color': "darkblue"},
                 'bgcolor': "red",

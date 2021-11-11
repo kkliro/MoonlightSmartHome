@@ -10,11 +10,14 @@ from app import app
 
 from apps import temperature_page
 
-#from utils import led, temperature
+from utils import led, temperature
 
 # app = dash.Dash()
 
 led_status = 0
+
+g_temperature = 0
+g_humidity = 0
 
 layout = html.Div([
     html.H2(children="Home Page"),
@@ -45,12 +48,21 @@ layout = html.Div([
     [Input('temperature-interval', 'n_intervals')]
 )
 def on_interval_update(v):
-    #temperature = temperature.get_temp()
-    #humidity = temperature.get_humidity()
+    global g_temperature
+    global g_humidity
+    
+    _temperature = temperature.get_temp()
+    _humidity = temperature.get_humidity()
+    
+    if _temperature != None:
+        g_temperature = _temperature
+        
+    if _humidity != None:
+        g_humidity = _humidity
 
     return [
-        [f"Temperature: {0}"], 
-        [f"Humidity: {0}"]
+        [f"Temperature: {g_temperature}"], 
+        [f"Humidity: {g_humidity}"]
     ]
 
 @app.callback(
@@ -66,11 +78,11 @@ def on_clicked(n_clicks):
     global led_status
 
     if (n_clicks != None):
-        led_status = n_clicks % 2        
+        led_status = n_clicks % 2
 
     if led_status == 1:
         light_state = "ON"
 
-    #led.setLEDOutput(led_status)
+    led.set_led_output(led_status)
 
     return [f"Light State: {light_state}"]

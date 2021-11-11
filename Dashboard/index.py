@@ -11,9 +11,6 @@ from apps import home_page, temperature_page
 
 led_status = 0
 
-temperature = 0
-humidity = 0
-
 app.layout = html.Div([
     html.H1(children='Smart Home Security'),
     dcc.Location(id='url', refresh=False),
@@ -41,4 +38,4 @@ def display_page(pathname):
         return home_page.layout
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

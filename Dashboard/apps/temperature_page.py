@@ -7,11 +7,14 @@ from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 
 from app import app
-from utils import temperature
+
+from utils import email
+
+#from utils import temperature
 
 # app = dash.Dash()
 
-temperature_threshold = 20;
+temperature_threshold = 25.0
 
 layout = html.Div([
     html.H2(children="Temperature"),
@@ -66,6 +69,15 @@ def on_interval_update_graphs(v):
     #humidity_read = temperature.get_humidity();
     temperature_read = 20;
     humidity_read = 50;
+
+    email.email_reader()
+
+    if temperature_read > temperature_threshold:
+        email.send_email('Enable Fan', 'Would you like to turn on the fan?')
+
+    # elif temperature_read <= temperature_threshold:
+    #     print("Send email asking to turn fan off")
+
     
     temp_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
@@ -82,7 +94,7 @@ def on_interval_update_graphs(v):
                 {'range': [-30, -10], 'color': 'royalblue'},
                 {'range': [-10, 10], 'color': 'white'}],
                 'threshold': {
-                'line': {'color': "white", 'width': 4},
+                'line': {'color': "green", 'width': 4},
                 'thickness': 0.75,
                 'value': temperature_threshold}}))
 

@@ -30,7 +30,6 @@ app.layout = html.Div([
     dcc.Store('led-state-store', storage_type='local'),
 ])
 
-
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
@@ -40,7 +39,6 @@ def display_page(pathname):
         return temperature_page.layout
     else:
         return home_page.layout
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)

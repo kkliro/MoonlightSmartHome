@@ -9,6 +9,7 @@ from dash.exceptions import PreventUpdate
 from app import app
 
 from apps import temperature_page
+
 #from utils import led, temperature
 
 # app = dash.Dash()
@@ -46,8 +47,6 @@ layout = html.Div([
 def on_interval_update(v):
     #temperature = temperature.get_temp()
     #humidity = temperature.get_humidity()
-    #temperature = app.temperature
-    #humidity = app.humidity
 
     return [
         [f"Temperature: {0}"], 
@@ -62,14 +61,10 @@ def on_interval_update(v):
         Input("change-led-status", "n_clicks"), 
     ]
 )
-def on_clicked(n_clicks):
-    print(temperature_page.temperature_threshold)
-    
+def on_clicked(n_clicks):    
     light_state = "OFF"
     global led_status
-    
-    #led_status = 0
-    
+
     if (n_clicks != None):
         led_status = n_clicks % 2        
 

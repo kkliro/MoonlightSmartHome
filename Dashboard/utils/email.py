@@ -6,7 +6,7 @@ import datetime
 
 from utils import motor
 
-sent_fan_on = False
+email_debounce = False
 
 sys_admin_email = 'iotvanier.smarthome@gmail.com'
 sys_admin_pw = 'banana123!'
@@ -14,9 +14,9 @@ client_email = 'iotvanier.smarthome@gmail.com' #change to client email
 client_pw = 'banana123!' #change to client pw
 
 def send_email(e_subject, e_text):
-    global sent_fan_on
-    if (not sent_fan_on):
-        sent_fan_on = True
+    global email_debounce
+    if (not email_debounce):
+        email_debounce = True
 
         sender = sys_admin_email
         pw = sys_admin_pw
@@ -38,6 +38,8 @@ def send_email(e_subject, e_text):
             server.sendmail(sender, receiver, message)
             
         print("Sent to ", receiver)
+        
+        email_debounce = False
 
 def email_reader():
     global sent_fan_on

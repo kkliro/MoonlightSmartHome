@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 GPIO.setwarnings(False)
 
 GPIO.setmode(GPIO.BCM)
-LEDs = [17, 26]
+LEDs = [17]
 
 for LED in LEDs:
     GPIO.setup(LED, GPIO.OUT)

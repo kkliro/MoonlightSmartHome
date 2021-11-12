@@ -8,9 +8,7 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
-from utils import email
-
-from utils import temperature
+from utils import email, temperature, motor
 
 # app = dash.Dash()
 
@@ -19,13 +17,15 @@ temperature_threshold = 25.0
 g_temperature = [0,0]
 g_humidity = [0,0]
 
+g_sent_email = False
+
 layout = html.Div([
-    html.H2(children="Temperature"),
+    html.H2(children="Temperature Page"),
     
-    html.P(id='threshold-display', children=f"Temperature Threshold: {temperature_threshold}"),
+    html.P(id='temp-threshold-display', children=f"Temperature Threshold: {temperature_threshold}"),
     
-    dcc.Input(id='threshold-input', type='text', placeholder='Temperature Threshold'),
-    html.Button('Update Threshold', id='change-threshold'),
+    dcc.Input(id='temp-threshold-input', type='text', placeholder='Temperature Threshold'),
+    html.Button('Update Threshold', id='temp-change-threshold'),
     
 
     dcc.Graph(id='gauge-temp'),
@@ -40,17 +40,17 @@ layout = html.Div([
 
 @app.callback(
     [
-        Output("threshold-display", "children"),
+        Output("temp-threshold-display", "children"),
     ],
     [
-        Input("change-threshold", "n_clicks"),
+        Input("temp-change-threshold", "n_clicks"),
         #Input("threshold-input", "value"), 
     ],
     [
-        State("threshold-input", "value")        
+        State("temp-threshold-input", "value")        
     ]
 )
-def update_threshold(n_clicks, value):
+def update_temp_threshold(n_clicks, value):
     global temperature_threshold
     
     if value != None:    
@@ -58,7 +58,7 @@ def update_threshold(n_clicks, value):
             newValue = float(value)
             if abs(newValue) <= 30 :
                 temperature_threshold = newValue
-        except ValueError:     # Errors happen fairly often, DHT's are hard to read, just keep going
+        except ValueError:     
             print("Not a float")
 
     return [f"Temperature Threshold: {temperature_threshold}"]
@@ -73,7 +73,7 @@ def update_threshold(n_clicks, value):
 def on_interval_update_graphs(v):
     global g_temperature
     global g_humidity
-    
+    global g_sent_email
     
     temperature_read = temperature.get_temp();
     humidity_read = temperature.get_humidity();
@@ -83,7 +83,11 @@ def on_interval_update_graphs(v):
         g_temperature[0] = temperature_read
         
         if temperature_read > temperature_threshold:
-            email.send_email('Enable Fan', 'Would you like to turn on the fan?')
+            if not g_sent_email:
+                g_sent_email = True
+                email.send_email('Enable Fan', 'Would you like to turn on the fan?')
+        else:
+            motor.change_motor_state(False)
         
     if humidity_read != None:
         g_humidity[1] = g_humidity[0]
@@ -93,6 +97,9 @@ def on_interval_update_graphs(v):
     #humidity_read = 50;
 
     email.email_reader()
+    
+    if g_sent_email and not motor.motor_state:
+        g_sent_email = True
 
     # elif temperature_read <= temperature_threshold:
     #     print("Send email asking to turn fan off")

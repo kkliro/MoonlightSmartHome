@@ -7,7 +7,7 @@ from app import app
 from app import server
 
 # Connect to your app pages
-from apps import home_page, temperature_page
+from apps import home_page, temperature_page, led_page
 
 led_status = 0
 
@@ -18,13 +18,14 @@ app.layout = html.Div([
         html.Div([
             dcc.Link('Home', href='/apps/home_page'),
         ], className="row"),
-         html.Div([
+        html.Div([
             dcc.Link('Temperature', href='/apps/temperature_page'),
-        ], className="col")
+        ], className="col"),
+        html.Div([
+            dcc.Link('LED', href='/apps/led_page'),
+        ], className="col"),
     ], className="row"),
     html.Div(id='page-content', children=[]),
-    
-    dcc.Store('led-state-store', storage_type='local'),
 ])
 
 @app.callback(Output('page-content', 'children'),
@@ -34,6 +35,8 @@ def display_page(pathname):
         return home_page.layout
     elif pathname == '/apps/temperature_page':
         return temperature_page.layout
+    elif pathname == '/apps/led_page':
+        return led_page.layout
     else:
         return home_page.layout
 

@@ -74,16 +74,16 @@ humidity_card = dbc.Card(
     style={"width": "30rem"},
 )
 
-component_status_card = dbc.Card(
+light_status_card = dbc.Card(
     [
         # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
-                html.H4("Component States", className="card-title", style={'text-align':'center'}),
-                html.H4("Lights", className='card-text'),
+                html.H4("Lights", className="card-title", style={'text-align':'center'}),
+                # html.H4("Lights", className='card-text'),
                 dcc.Markdown("LED: ON", id='led-states-output', className="card-text", style={'font-size':'17px', "white-space": "pre"}),
-                html.H4("Fan", className='card-text'),
-                html.P("Fan: ON", id='fan-states-output', className="card-text", style={'font-size':'17px'}),
+                # html.H4("Fan", className='card-text'),
+                # html.P("Fan: ON", id='fan-states-output', className="card-text", style={'font-size':'17px'}),
             ]
         ),
         # dbc.CardFooter("This is the footer"),
@@ -91,11 +91,29 @@ component_status_card = dbc.Card(
     style={"width": "30rem"},
 )
 
+motor_status_card = dbc.Card(
+    [
+        # dbc.CardHeader("This is the header"),
+        dbc.CardBody(
+            [
+                html.H4("Fan", className="card-title", style={'text-align':'center'}),
+                # html.H4("Lights", className='card-text'),
+                # dcc.Markdown("LED: ON", id='led-states-output', className="card-text", style={'font-size':'17px', "white-space": "pre"}),
+                # html.H4("Fan", className='card-text'),
+                html.P("Fan: ON", id='fan-states-output', className="card-text", style={'font-size':'17px'}),
+            ]
+        ),
+        # dbc.CardFooter("This is the footer"),
+    ],
+    style={"width": "20rem"},
+)
+
 cards = dbc.Row(
     [
         dbc.Col(temperature_card, width="auto"),
         dbc.Col(humidity_card, width="auto"),
-        dbc.Col(component_status_card, width="auto"),
+        dbc.Col(light_status_card, width="auto"),
+        dbc.Col(motor_status_card, width="auto"),
     ]
 )
 

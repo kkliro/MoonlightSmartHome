@@ -8,25 +8,59 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
-from utils import email
+from utils import email, led
 
-from utils import photoresistor
+import dash_bootstrap_components as dbc
+import dash_daq as daq
 
-# app = dash.Dash()
 
-led_threshold = 10.0
-led_state = 0
+light_card = dbc.Card(
+    [
+        # dbc.CardHeader("This is the header"),
+        dbc.CardBody(
+            [
+                html.H4("Light Readings", className="card-title", style={'text-align':'center'}),
+                html.Br(),
+                html.P(id='led-threshold-display', children=f"Light Threshold: {led.led_threshold}"),
+                html.P(id='resistance-state', children=f"Light Intensity: {led.get_resistance()}"),
+                html.Br(),
+                html.H4("Light States", className='card-text'),
+                html.Div(id='led-state', children=f"Light State: OFF"),
+            ]
+        ),
+        # dbc.CardFooter("This is the footer"),
+    ],
+    style={"width": "30rem"},
+)
 
+light_threshold_card = dbc.Card(
+    [
+        # dbc.CardHeader("This is the header"),
+        dbc.CardBody(
+            [
+                html.H4("Light Threshold Settings", className="card-title", style={'text-align':'center'}),
+                html.Br(),
+                dbc.Input(id='led-threshold-input', type='text', placeholder='Light Threshold'),
+                html.Br(),
+                dbc.Button('Update Threshold', id='led-change-threshold', color="success", className="me-1"),
+            ]
+        ),
+        # dbc.CardFooter("This is the footer"),
+    ],
+    style={"width": "30rem"},
+)
+
+cards = dbc.Row(
+    [
+        dbc.Col(light_card, width="auto"),
+        dbc.Col(light_threshold_card, width="auto"),
+    ]
+)
 
 layout = html.Div([
-    html.H2(children="Lights Page"),
-    
-    html.P(id='led-threshold-display', children=f"Light Threshold: {led_threshold}"),
-    html.P(id='resistance-state', children=f"Light Intensity: {photoresistor.get_resistance()}"),
-    html.P(id='led-state', children=f"Light State: OFF"),
-    
-    dcc.Input(id='led-threshold-input', type='text', placeholder='Light Threshold'),
-    html.Button('Update Threshold', id='led-change-threshold'),
+    # html.H2(children="Lights Page"),
+
+    cards,
     
     dcc.Interval(
         id='led-interval',
@@ -54,11 +88,11 @@ def update_led_threshold(n_clicks, value):
         try:
             newValue = float(value)
             if abs(newValue) >= 0:
-                led_threshold = newValue
+                led.set_led_threshold(newValue)
         except ValueError:   
             print("Not a float")
 
-    return [f"Light Threshold: {led_threshold}"]
+    return [f"Light Threshold: {led.led_threshold}"]
 
 @app.callback(
     [
@@ -68,19 +102,46 @@ def update_led_threshold(n_clicks, value):
     [Input('led-interval', 'n_intervals')]
 )
 def on_interval_update_led(v):
-    global led_state
     led_status = "OFF"
     
-    if photoresistor.get_resistance() < led_threshold:
-        if led_state != 1:
+    if led.get_resistance() < led.led_threshold:
+        if not led.get_led_state(1):
             email.send_email('Turning ON LED','Lower than threshold, system turned ON your LED.')
-        led_state = 1
+        led.set_led_state(1, True)
         led_status = "ON"
     else:
-        if led_state != 0:
+        if led.get_led_state(1):
             email.send_email('Turning OFF LED','Higher than threshold, system turned OFF your LED.')
-        led_state = 0
+        led.set_led_state(1, False)
     
-    photoresistor.set_led_output(led_state)
+    # led.set_led_output(1, led_state)
 
-    return [f"LED State: {led_status}", f"Light Intensity: {50}"]
+    p_elements = []
+
+    count = 1
+    for state in led.led_light_states:
+        is_on = False
+
+        p_text = f"Light {count}: "
+        if not state:
+            p_text = p_text + "off"
+        else:
+            is_on = True
+            p_text = p_text + "on"
+
+        p_elements.append(html.Div(children=[
+            dbc.Row([
+                dbc.Col(p_text, width='auto'),               
+                
+                dbc.Col(daq.BooleanSwitch(
+                    on=is_on,
+                    id=f"light-switch-{count}",
+                    color="#9B51E0",
+                ), width='auto'),
+            ]),
+            html.Br()
+        ]))
+
+        count = count + 1
+
+    return [p_elements, f"Light Intensity: {led.get_resistance()}"] 

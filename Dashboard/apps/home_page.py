@@ -81,7 +81,7 @@ component_status_card = dbc.Card(
             [
                 html.H4("Component States", className="card-title", style={'text-align':'center'}),
                 html.H4("Lights", className='card-text'),
-                html.P("LED: ON", id='led-states-output', className="card-text", style={'font-size':'17px'}),
+                dcc.Markdown("LED: ON", id='led-states-output', className="card-text", style={'font-size':'17px', "white-space": "pre"}),
                 html.H4("Fan", className='card-text'),
                 html.P("Fan: ON", id='fan-states-output', className="card-text", style={'font-size':'17px'}),
             ]
@@ -163,7 +163,7 @@ def on_interval_update(v):
     count = 1
 
     for led_state in led_states:
-        led_output = led_output + f"Light {count}: {led_state}"
+        led_output = led_output + f'''Light {count}: {led_state}\n'''
         count = count + 1
 
     current_motor_state = component_states['motor']

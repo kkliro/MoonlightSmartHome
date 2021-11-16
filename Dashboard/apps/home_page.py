@@ -80,10 +80,7 @@ light_status_card = dbc.Card(
         dbc.CardBody(
             [
                 html.H4("Lights", className="card-title", style={'text-align':'center'}),
-                # html.H4("Lights", className='card-text'),
                 dcc.Markdown("LED: ON", id='led-states-output', className="card-text", style={'font-size':'17px', "white-space": "pre"}),
-                # html.H4("Fan", className='card-text'),
-                # html.P("Fan: ON", id='fan-states-output', className="card-text", style={'font-size':'17px'}),
             ]
         ),
         # dbc.CardFooter("This is the footer"),
@@ -97,9 +94,6 @@ motor_status_card = dbc.Card(
         dbc.CardBody(
             [
                 html.H4("Fan", className="card-title", style={'text-align':'center'}),
-                # html.H4("Lights", className='card-text'),
-                # dcc.Markdown("LED: ON", id='led-states-output', className="card-text", style={'font-size':'17px', "white-space": "pre"}),
-                # html.H4("Fan", className='card-text'),
                 html.P("Fan: ON", id='fan-states-output', className="card-text", style={'font-size':'17px'}),
             ]
         ),

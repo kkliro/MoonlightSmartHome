@@ -8,32 +8,83 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
+import dash_bootstrap_components as dbc
+import dash_daq as daq
+
 from utils import email, temperature, motor
 
 # app = dash.Dash()
-
-temperature_threshold = 25.0
 
 g_temperature = [0,0]
 g_humidity = [0,0]
 
 g_sent_email = False
 
-layout = html.Div([
-    html.H2(children="Temperature Page"),
-    
-    html.P(id='temp-threshold-display', children=f"Temperature Threshold: {temperature_threshold}"),
-    
-    dcc.Input(id='temp-threshold-input', type='text', placeholder='Temperature Threshold'),
-    html.Button('Update Threshold', id='temp-change-threshold'),
-    
+temp_gauge_card = dbc.Card(
+    [
+        # dbc.CardHeader("This is the header"),
+        dbc.CardBody(
+            [
+                html.H4("Temperature Reading", className="card-title", style={'text-align':'center'}),
+                html.Br(),
+                dcc.Graph(id='gauge-temp'),
+                html.P(id='temp-currentval-display', children=f"Current Recorded Temperature: {temperature._temperature[0]}°C"),
+                html.P(id='temp-lastval-display', children=f"Last Recorded Temperature Threshold: {temperature._temperature[1]}°C"),
+            ]
+        ),
+        # dbc.CardFooter("This is the footer"),
+    ],
+    style={"width": "30rem"},
+)
 
-    dcc.Graph(id='gauge-temp'),
-    dcc.Graph(id='gauge-hum'),
+humidity_gauge_card = dbc.Card(
+    [
+        # dbc.CardHeader("This is the header"),
+        dbc.CardBody(
+            [
+                html.H4("Humidity Reading", className="card-title", style={'text-align':'center'}),
+                html.Br(),
+                dcc.Graph(id='gauge-hum'),
+            ]
+        ),
+        # dbc.CardFooter("This is the footer"),
+    ],
+    style={"width": "30rem"},
+)
+
+temp_threshold_card = dbc.Card(
+    [
+        # dbc.CardHeader("This is the header"),
+        dbc.CardBody(
+            [
+                html.H4("Temperature Threshold Settings", className="card-title", style={'text-align':'center'}),
+                html.Br(),
+                html.P(id='temp-threshold-display', children=f"Temperature Threshold: {temperature.temperature_threshold}"),
+                html.Br(),
+                dbc.Input(id='temp-threshold-input', type='text', placeholder='Temperature Threshold'),
+                html.Br(),
+                dbc.Button('Update Threshold', id='temp-change-threshold', color="success", className="me-1"),
+            ]
+        ),
+        # dbc.CardFooter("This is the footer"),
+    ],
+    style={"width": "30rem"},
+)
+
+cards = dbc.Row(
+    [
+        dbc.Col(humidity_gauge_card, width="auto"),
+        dbc.Col(temp_gauge_card, width="auto"),
+        dbc.Col(temp_threshold_card, width="auto"),
+    ]
+)
+
+layout = html.Div([
+    cards,
     
     dcc.Interval(
         id='temperature-interval',
-        interval=1*5000, # 5 seconds
+        interval=1*1000, # 5 seconds
         n_intervals=0
     )
 ])
@@ -44,45 +95,41 @@ layout = html.Div([
     ],
     [
         Input("temp-change-threshold", "n_clicks"),
-        #Input("threshold-input", "value"), 
     ],
     [
         State("temp-threshold-input", "value")        
     ]
 )
 def update_temp_threshold(n_clicks, value):
-    global temperature_threshold
-    
     if value != None:    
         try:
             newValue = float(value)
-            if abs(newValue) <= 30 :
-                temperature_threshold = newValue
+            if abs(newValue) <= 29 :
+                temperature.set_temperature_threshold(newValue)
         except ValueError:     
             print("Not a float")
 
-    return [f"Temperature Threshold: {temperature_threshold}"]
+    return [f"Temperature Threshold: {temperature.temperature_threshold}"]
 
 @app.callback(
     [
         Output('gauge-temp', 'figure'),
-        Output('gauge-hum', 'figure')
+        Output('gauge-hum', 'figure'),
+        Output('temp-currentval-display', 'children'),
+        Output('temp-lastval-display', 'children'),
     ],
     [Input('temperature-interval', 'n_intervals')]
 )
 def on_interval_update_graphs(v):
-    global g_temperature
-    global g_humidity
     global g_sent_email
     
     temperature_read = temperature.get_temp();
     humidity_read = temperature.get_humidity();
     
     if temperature_read != None:
-        g_temperature[1] = g_temperature[0]
-        g_temperature[0] = temperature_read
+        temperature.set_temperature(temperature_read)
         
-        if temperature_read > temperature_threshold:
+        if temperature_read > temperature.temperature_threshold:
             if not g_sent_email:
                 g_sent_email = True
                 email.send_email('Enable Fan', 'Would you like to turn on the fan?')
@@ -90,8 +137,7 @@ def on_interval_update_graphs(v):
             motor.change_motor_state(False)
         
     if humidity_read != None:
-        g_humidity[1] = g_humidity[0]
-        g_humidity[0] = humidity_read
+        temperature.set_humidity(humidity_read)
     
     #temperature_read = 20;
     #humidity_read = 50;
@@ -107,29 +153,29 @@ def on_interval_update_graphs(v):
     
     temp_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
-        value = g_temperature[0],
+        value = temperature._temperature[0],
         domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': "Temperature",'font': {'size': 24}},
-        delta = {'reference': g_temperature[1], 'increasing': {'color': "RebeccaPurple"} },
+        # title = {'text': "Temperature",'font': {'size': 24}},
+        delta = {'reference': temperature._temperature[1], 'increasing': {'color': "lightgreen"} },
         gauge = {'axis': {'range': [-30, 30], 'tickwidth': 1, 'tickcolor': "darkblue"},
                 'bar': {'color': "darkblue"},
                 'bgcolor': "red",
-                'borderwidth': 2,
+                'borderwidth': 5,
                 'bordercolor': "gray",
                  'steps': [
                 {'range': [-30, -10], 'color': 'royalblue'},
                 {'range': [-10, 10], 'color': 'white'}],
                 'threshold': {
-                'line': {'color': "green", 'width': 4},
+                'line': {'color': "black", 'width': 4},
                 'thickness': 0.75,
-                'value': temperature_threshold}}))
+                'value': temperature.temperature_threshold}}))
 
     hum_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
-        value = g_humidity[0],
+        value = temperature._humidity[0],
         domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': "Humidity",'font': {'size': 24}},
-        delta = {'reference': g_humidity[1], 'increasing': {'color': "RebeccaPurple"} },
+        # title = {'text': "Humidity",'font': {'size': 24}},
+        delta = {'reference': temperature._humidity[1], 'increasing': {'color': "lightgreen"} },
         gauge = {'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
                 'bar': {'color': "darkblue"},
                 'bgcolor': "red",
@@ -141,9 +187,9 @@ def on_interval_update_graphs(v):
                 'threshold': {
                 'line': {'color': "white", 'width': 4},
                 'thickness': 0.75,
-                'value': 99}}))
+                'value': 80}}))
     
-    hum_fig.update_layout(paper_bgcolor = "beige", font = {'color': "darkblue", 'family': "Arial"})
-    temp_fig.update_layout(paper_bgcolor = "lavender", font = {'color': "darkblue", 'family': "Arial"})
+    hum_fig.update_layout(paper_bgcolor = "#303030", font = {'color': "white", 'family': "Arial"})
+    temp_fig.update_layout(paper_bgcolor = "#303030", font = {'color': "white", 'family': "Arial"})
 
-    return [temp_fig, hum_fig]
+    return [temp_fig, hum_fig, f"Current Recorded Temperature: {temperature._temperature[0]}°C", f"Last Recorded Temperature: {temperature._temperature[1]}°C"]

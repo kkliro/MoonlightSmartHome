@@ -21,7 +21,6 @@ light_card = dbc.Card(
             [
                 html.H4("Light Readings", className="card-title", style={'text-align':'center'}),
                 html.Br(),
-                html.P(id='led-threshold-display', children=f"Light Threshold: {led.led_threshold}"),
                 html.P(id='resistance-state', children=f"Light Intensity: {led.get_resistance()}"),
                 html.Br(),
                 html.H4("Light States", className='card-text'),
@@ -39,6 +38,8 @@ light_threshold_card = dbc.Card(
         dbc.CardBody(
             [
                 html.H4("Light Threshold Settings", className="card-title", style={'text-align':'center'}),
+                html.Br(),
+                html.P(id='led-threshold-display', children=f"Light Threshold: {led.led_threshold}"),
                 html.Br(),
                 dbc.Input(id='led-threshold-input', type='text', placeholder='Light Threshold'),
                 html.Br(),

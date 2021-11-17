@@ -34,7 +34,7 @@ CONTENT_STYLE = {
 sidebar = html.Div(id='index-sidebar',
     children=[
         html.H2("Smart Home Dashboard", className="display-4"),
-        html.H4("Current User: Konstantin K."),
+        html.H4(id='profile-name', children="Current User: Konstantin K."),
         html.Hr(),
         dbc.Nav(
             [
@@ -59,7 +59,7 @@ app.layout = html.Div(children=[
 @app.callback([
                 Output('page-content', 'children'),
                 Output('index-sidebar', 'style'),
-
+                Output('profile-name', 'children'),
                 ],
               [Input('url', 'pathname')])
 def display_page(pathname):
@@ -82,7 +82,7 @@ def display_page(pathname):
         else:
             new_layout = home_page.layout
 
-    return [new_layout, {'display':sidebar_display_style}]
+    return [new_layout, {'display':sidebar_display_style}, f"Current User: {rfid.get_profile_name()}"]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

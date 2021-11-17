@@ -8,10 +8,10 @@ from app import server
 
 import dash_bootstrap_components as dbc
 
-# Connect to your app pages
-from apps import home_page, temperature_page, led_page
+from utils import rfid
 
-led_status = 0
+# Connect to your app pages
+from apps import home_page, temperature_page, led_page, unauthorized_page
 
 # styling the sidebar
 PAGE_STYLE = {
@@ -31,8 +31,8 @@ CONTENT_STYLE = {
     "padding": "2rem 1rem",
 }
 
-sidebar = html.Div(
-    [
+sidebar = html.Div(id='index-sidebar',
+    children=[
         html.H2("Smart Home Dashboard", className="display-4"),
         html.H4("Current User: Konstantin K."),
         html.Hr(),
@@ -47,7 +47,7 @@ sidebar = html.Div(
         ),
         html.Hr(),
     ],
-    style=PAGE_STYLE,
+    style={'display':'block'},
 )
 
 app.layout = html.Div(children=[
@@ -56,17 +56,33 @@ app.layout = html.Div(children=[
     html.Div(id='page-content', children=[], style=PAGE_STYLE),
 ])
 
-@app.callback(Output('page-content', 'children'),
+@app.callback([
+                Output('page-content', 'children'),
+                Output('index-sidebar', 'style'),
+
+                ],
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/apps/home_page':
-        return home_page.layout
-    elif pathname == '/apps/temperature_page':
-        return temperature_page.layout
-    elif pathname == '/apps/led_page':
-        return led_page.layout
-    else:
-        return home_page.layout
+    sidebar_display_style = 'block'
+    new_layout = unauthorized_page.layout
+
+    if not rfid.is_authorized():
+        sidebar_display_style = 'none'
+        new_layout = unauthorized_page.layout 
+    else:    
+        if pathname == '/apps/home_page':
+            # return home_page.layout
+            new_layout = home_page.layout
+        if pathname == '/apps/temperature_page':
+            # return temperature_page.layout
+            new_layout = temperature_page.layout
+        elif pathname == '/apps/led_page':
+            # return led_page.layout
+            new_layout = led_page.layout
+        else:
+            new_layout = home_page.layout
+
+    return [new_layout, {'display':sidebar_display_style}]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

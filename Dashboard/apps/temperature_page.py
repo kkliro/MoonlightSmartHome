@@ -11,7 +11,7 @@ from app import app
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 
-from utils import email, temperature, motor
+from utils import email, temperature, motor, rfid
 
 # app = dash.Dash()
 
@@ -45,6 +45,8 @@ humidity_gauge_card = dbc.Card(
                 html.H4("Humidity Reading", className="card-title", style={'text-align':'center'}),
                 html.Br(),
                 dcc.Graph(id='gauge-hum'),
+                html.P(id='hum-currentval-display', children=f"Current Recorded Humidity: {temperature._humidity[0]}%"),
+                html.P(id='hum-lastval-display', children=f"Last Recorded Humidity Threshold: {temperature._humidity[1]}%"),
             ]
         ),
         # dbc.CardFooter("This is the footer"),
@@ -59,7 +61,7 @@ temp_threshold_card = dbc.Card(
             [
                 html.H4("Temperature Threshold Settings", className="card-title", style={'text-align':'center'}),
                 html.Br(),
-                html.P(id='temp-threshold-display', children=f"Temperature Threshold: {temperature.temperature_threshold}"),
+                html.P(id='temp-threshold-display', children=f"Temperature Threshold: {rfid.get_temperature_threshold()}"),
                 html.Br(),
                 dbc.Input(id='temp-threshold-input', type='text', placeholder='Temperature Threshold'),
                 html.Br(),
@@ -105,11 +107,11 @@ def update_temp_threshold(n_clicks, value):
         try:
             newValue = float(value)
             if abs(newValue) <= 29 :
-                temperature.set_temperature_threshold(newValue)
+                rfid.set_temperature_threshold(newValue)
         except ValueError:     
             print("Not a float")
 
-    return [f"Temperature Threshold: {temperature.temperature_threshold}"]
+    return [f"Temperature Threshold: {rfid.get_temperature_threshold()}"]
 
 @app.callback(
     [
@@ -117,24 +119,29 @@ def update_temp_threshold(n_clicks, value):
         Output('gauge-hum', 'figure'),
         Output('temp-currentval-display', 'children'),
         Output('temp-lastval-display', 'children'),
+        Output('hum-currentval-display', 'children'),
+        Output('hum-lastval-display', 'children'),
     ],
     [Input('temperature-interval', 'n_intervals')]
 )
 def on_interval_update_graphs(v):
     global g_sent_email
-    
+
     temperature_read = temperature.get_temp();
     humidity_read = temperature.get_humidity();
     
     if temperature_read != None:
         temperature.set_temperature(temperature_read)
         
-        if temperature_read > temperature.temperature_threshold:
-            if not g_sent_email:
-                g_sent_email = True
-                email.send_email('Enable Fan', 'Would you like to turn on the fan?')
-        else:
-            motor.change_motor_state(False)
+        try:
+            if temperature_read > rfid.get_temperature_threshold():
+                if not g_sent_email:
+                    g_sent_email = True
+                    email.send_email('Enable Fan', 'Would you like to turn on the fan?')
+            else:
+                motor.change_motor_state(False)
+        except RuntimeError as error:
+            print('Temperature Threshold Error')
         
     if humidity_read != None:
         temperature.set_humidity(humidity_read)
@@ -168,7 +175,7 @@ def on_interval_update_graphs(v):
                 'threshold': {
                 'line': {'color': "black", 'width': 4},
                 'thickness': 0.75,
-                'value': temperature.temperature_threshold}}))
+                'value': rfid.get_temperature_threshold()}}))
 
     hum_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
@@ -192,4 +199,5 @@ def on_interval_update_graphs(v):
     hum_fig.update_layout(paper_bgcolor = "#303030", font = {'color': "white", 'family': "Arial"})
     temp_fig.update_layout(paper_bgcolor = "#303030", font = {'color': "white", 'family': "Arial"})
 
-    return [temp_fig, hum_fig, f"Current Recorded Temperature: {temperature._temperature[0]}°C", f"Last Recorded Temperature: {temperature._temperature[1]}°C"]
+    return [temp_fig, hum_fig, f"Current Recorded Temperature: {temperature._temperature[0]}°C", f"Last Recorded Temperature: {temperature._temperature[1]}°C", 
+    f"Current Recorded Humidity: {temperature._humidity[0]}%", f"Last Recorded Temperature: {temperature._humidity[1]}%"]

@@ -8,7 +8,7 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
-from utils import email, led
+from utils import email, led, rfid
 
 import dash_bootstrap_components as dbc
 import dash_daq as daq
@@ -39,7 +39,7 @@ light_threshold_card = dbc.Card(
             [
                 html.H4("Light Threshold Settings", className="card-title", style={'text-align':'center'}),
                 html.Br(),
-                html.P(id='led-threshold-display', children=f"Light Threshold: {led.led_threshold}"),
+                html.P(id='led-threshold-display', children=f"Light Threshold: {rfid.get_led_threshold()}"),
                 html.Br(),
                 dbc.Input(id='led-threshold-input', type='text', placeholder='Light Threshold'),
                 html.Br(),
@@ -89,11 +89,11 @@ def update_led_threshold(n_clicks, value):
         try:
             newValue = float(value)
             if abs(newValue) >= 0:
-                led.set_led_threshold(newValue)
+                rfid.set_led_threshold(newValue)
         except ValueError:   
             print("Not a float")
 
-    return [f"Light Threshold: {led.led_threshold}"]
+    return [f"Light Threshold: {rfid.get_led_threshold()}"]
 
 @app.callback(
     [
@@ -105,15 +105,18 @@ def update_led_threshold(n_clicks, value):
 def on_interval_update_led(v):
     led_status = "OFF"
     
-    if led.get_resistance() < led.led_threshold:
-        if not led.get_led_state(1):
-            email.send_email('Turning ON LED','Lower than threshold, system turned ON your LED.')
-        led.set_led_state(1, True)
-        led_status = "ON"
-    else:
-        if led.get_led_state(1):
-            email.send_email('Turning OFF LED','Higher than threshold, system turned OFF your LED.')
-        led.set_led_state(1, False)
+    try:
+        if led.get_resistance() < rfid.get_led_threshold():
+            if not led.get_led_state(1):
+                email.send_email('Turning ON LED','Lower than threshold, system turned ON your LED.')
+            led.set_led_state(1, True)
+            led_status = "ON"
+        else:
+            if led.get_led_state(1):
+                email.send_email('Turning OFF LED','Higher than threshold, system turned OFF your LED.')
+            led.set_led_state(1, False)
+    except RuntimeError as error:
+        print('LED Threshold Error')
     
     # led.set_led_output(1, led_state)
 

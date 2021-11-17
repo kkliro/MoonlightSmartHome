@@ -5,8 +5,6 @@
 # GPIO.setmode(GPIO.BCM)
 LEDs = [17, 26]
 
-led_threshold = 10.0
-
 led_light_states = LEDs
 
 # initialize states to 0
@@ -24,10 +22,6 @@ def get_resistance():
 def set_led_output(output, light):
 	# GPIO.output(light, output)
 	led_light_states[light] = output
-
-def set_led_threshold(value):
-	global led_threshold
-	led_threshold = value
 
 def get_led_state(index):
 	global led_light_states

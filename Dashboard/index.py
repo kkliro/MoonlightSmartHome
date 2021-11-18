@@ -127,4 +127,4 @@ def display_page(pathname):
     return [new_layout, {'display':sidebar_display_style}]
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

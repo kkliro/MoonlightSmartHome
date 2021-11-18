@@ -8,21 +8,21 @@ stored_tags = {
         'tag_id':18847127109,
         'name':'Konstantin K.',
         'temperature_threshold':25.0,
-        'led_threshold':10.0
+        'led_threshold':50.0
     },
 
     1: {
         'tag_id':1725312610,
         'name':'Earvin-Carl D.',
         'temperature_threshold':5.0,
-        'led_threshold':20.0
+        'led_threshold':60.0
     },
     
     2: {
         'tag_id':2432424213,
         'name':'Andrea T.',
         'temperature_threshold':15.0,
-        'led_threshold':30.0
+        'led_threshold':70.0
     }
 
 }

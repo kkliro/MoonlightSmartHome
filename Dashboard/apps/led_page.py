@@ -118,9 +118,7 @@ def on_interval_update_led(v):
                 email_handler.send_email('Turning OFF LED','Higher than threshold, system turned OFF your LED.')
             led.set_led_state(1, False)
     except RuntimeError as error:
-        print('LED Threshold Error')
-    
-    # led.set_led_output(1, led_state)
+        print(error.args[0])
 
     p_elements = []
 

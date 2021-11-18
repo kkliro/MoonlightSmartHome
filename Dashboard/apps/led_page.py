@@ -8,7 +8,7 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
-from utils import email, led, rfid
+from utils import email_handler, led, rfid
 
 import dash_bootstrap_components as dbc
 import dash_daq as daq
@@ -40,8 +40,9 @@ light_threshold_card = dbc.Card(
                 html.H4("Light Threshold Settings", className="card-title", style={'text-align':'center'}),
                 html.Br(),
                 html.P(id='led-threshold-display', children=f"Light Threshold: {rfid.get_led_threshold()}"),
+                html.P(id='led-threshold-display-hidden', children=f"Light Threshold: {rfid.get_led_threshold()}", style={'display':'none'}),
                 html.Br(),
-                dbc.Input(id='led-threshold-input', type='text', placeholder='Light Threshold'),
+                dbc.Input(id='led-threshold-input', type='number', min=0,max=1200, placeholder='Light Threshold'),
                 html.Br(),
                 dbc.Button('Update Threshold', id='led-change-threshold', color="success", className="me-1"),
             ]
@@ -73,7 +74,7 @@ layout = html.Div([
 
 @app.callback(
     [
-        Output("led-threshold-display", "children"),
+        Output("led-threshold-display-hidden", "children"),
     ],
     [
         Input("led-change-threshold", "n_clicks"),
@@ -99,6 +100,7 @@ def update_led_threshold(n_clicks, value):
     [
         Output('led-state', 'children'),
         Output('resistance-state', 'children'),
+        Output("led-threshold-display", "children"),
     ],
     [Input('led-interval', 'n_intervals')]
 )
@@ -108,12 +110,12 @@ def on_interval_update_led(v):
     try:
         if led.get_resistance() < rfid.get_led_threshold():
             if not led.get_led_state(1):
-                email.send_email('Turning ON LED','Lower than threshold, system turned ON your LED.')
+                email_handler.send_email('Turning ON LED','Lower than threshold, system turned ON your LED.')
             led.set_led_state(1, True)
             led_status = "ON"
         else:
             if led.get_led_state(1):
-                email.send_email('Turning OFF LED','Higher than threshold, system turned OFF your LED.')
+                email_handler.send_email('Turning OFF LED','Higher than threshold, system turned OFF your LED.')
             led.set_led_state(1, False)
     except RuntimeError as error:
         print('LED Threshold Error')
@@ -148,4 +150,4 @@ def on_interval_update_led(v):
 
         count = count + 1
 
-    return [p_elements, f"Light Intensity: {led.get_resistance()}"] 
+    return [p_elements, f"Light Intensity: {led.get_resistance()}", f"Light Threshold: {rfid.get_led_threshold()}"] 

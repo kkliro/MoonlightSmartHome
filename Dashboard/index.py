@@ -1,6 +1,7 @@
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
+from dash.exceptions import PreventUpdate
 
 # Connect to main app.py file
 from app import app
@@ -8,10 +9,12 @@ from app import server
 
 import dash_bootstrap_components as dbc
 
-from utils import rfid
+from utils import rfid, mqtt_server
 
 # Connect to your app pages
 from apps import home_page, temperature_page, led_page, unauthorized_page
+
+page_was_denied = True
 
 # styling the sidebar
 PAGE_STYLE = {
@@ -54,12 +57,51 @@ app.layout = html.Div(children=[
     sidebar,
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content', children=[], style=PAGE_STYLE),
+    html.Div(id='rfid-check-display', style={'display':'none'}),
+    dcc.Interval(
+        id='rfid-check-interval',
+        interval=1*1000,
+        n_intervals=0
+    ),
+    
+    dcc.Interval(
+        id='rfid-name-interval',
+        interval=1*1000,
+        n_intervals=0
+    ),
 ])
+
+@app.callback([
+        Output('profile-name', 'children')
+    ],
+    [Input('rfid-check-interval', 'n_intervals')])
+def on_update_rfid_name(v):
+    return [f"Current User: {rfid.get_profile_name()}"]
+
+@app.callback([
+        Output('rfid-check-display', 'children'),
+        Output('url', 'pathname'),
+#         Output('profile-name', 'children'),        
+    ],
+    [Input('rfid-check-interval', 'n_intervals')])
+def on_check_rfid_interval(v):
+    global page_was_denied
+    
+    name = rfid.check_for_scanned_tag()
+    
+    allowed = rfid.is_authorized()
+    
+    if allowed and not page_was_denied:
+        raise PreventUpdate
+    
+    page_was_denied = not allowed 
+        
+#     return ["Text", "/apps/home_page", f"Current User: {rfid.get_profile_name()}"]
+    return ["Text", "/apps/home_page"]
 
 @app.callback([
                 Output('page-content', 'children'),
                 Output('index-sidebar', 'style'),
-                Output('profile-name', 'children'),
                 ],
               [Input('url', 'pathname')])
 def display_page(pathname):
@@ -82,7 +124,7 @@ def display_page(pathname):
         else:
             new_layout = home_page.layout
 
-    return [new_layout, {'display':sidebar_display_style}, f"Current User: {rfid.get_profile_name()}"]
+    return [new_layout, {'display':sidebar_display_style}]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

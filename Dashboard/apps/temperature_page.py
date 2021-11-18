@@ -11,12 +11,9 @@ from app import app
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 
-from utils import email, temperature, motor, rfid
+from utils import email_handler, temperature, motor, rfid
 
 # app = dash.Dash()
-
-g_temperature = [0,0]
-g_humidity = [0,0]
 
 g_sent_email = False
 
@@ -62,8 +59,9 @@ temp_threshold_card = dbc.Card(
                 html.H4("Temperature Threshold Settings", className="card-title", style={'text-align':'center'}),
                 html.Br(),
                 html.P(id='temp-threshold-display', children=f"Temperature Threshold: {rfid.get_temperature_threshold()}"),
+                html.P(id='temp-threshold-display-hidden', children=f"Temperature Threshold: {rfid.get_temperature_threshold()}", style={'display':'none'}),
                 html.Br(),
-                dbc.Input(id='temp-threshold-input', type='text', placeholder='Temperature Threshold'),
+                dbc.Input(id='temp-threshold-input', type='number', min=-30,max=30, placeholder='Temperature Threshold'),
                 html.Br(),
                 dbc.Button('Update Threshold', id='temp-change-threshold', color="success", className="me-1"),
             ]
@@ -93,7 +91,7 @@ layout = html.Div([
 
 @app.callback(
     [
-        Output("temp-threshold-display", "children"),
+        Output("temp-threshold-display-hidden", "children"),
     ],
     [
         Input("temp-change-threshold", "n_clicks"),
@@ -121,6 +119,7 @@ def update_temp_threshold(n_clicks, value):
         Output('temp-lastval-display', 'children'),
         Output('hum-currentval-display', 'children'),
         Output('hum-lastval-display', 'children'),
+        Output("temp-threshold-display", "children"),
     ],
     [Input('temperature-interval', 'n_intervals')]
 )
@@ -137,7 +136,7 @@ def on_interval_update_graphs(v):
             if temperature_read > rfid.get_temperature_threshold():
                 if not g_sent_email:
                     g_sent_email = True
-                    email.send_email('Enable Fan', 'Would you like to turn on the fan?')
+                    email_handler.send_email('Enable Fan', 'Would you like to turn on the fan?')
             else:
                 motor.change_motor_state(False)
         except RuntimeError as error:
@@ -149,7 +148,7 @@ def on_interval_update_graphs(v):
     #temperature_read = 20;
     #humidity_read = 50;
 
-    email.email_reader()
+    email_handler.email_reader()
     
     if g_sent_email and not motor.motor_state:
         g_sent_email = True
@@ -200,4 +199,4 @@ def on_interval_update_graphs(v):
     temp_fig.update_layout(paper_bgcolor = "#303030", font = {'color': "white", 'family': "Arial"})
 
     return [temp_fig, hum_fig, f"Current Recorded Temperature: {temperature._temperature[0]}°C", f"Last Recorded Temperature: {temperature._temperature[1]}°C", 
-    f"Current Recorded Humidity: {temperature._humidity[0]}%", f"Last Recorded Temperature: {temperature._humidity[1]}%"]
+    f"Current Recorded Humidity: {temperature._humidity[0]}%", f"Last Recorded Temperature: {temperature._humidity[1]}%", f"Temperature Threshold: {rfid.get_temperature_threshold()}"]

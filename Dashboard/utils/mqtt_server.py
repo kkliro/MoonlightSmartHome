@@ -1,6 +1,9 @@
 import paho.mqtt.client as paho
 from paho.mqtt import client as mqtt_client
 
+from utils import email_handler, rfid, buzzer
+from datetime import datetime
+
 client = paho.Client("client-007")
 # broker = 'broker.emqx.io'
 broker = 'localhost'
@@ -23,6 +26,16 @@ def subscribe(client: mqtt_client):
             global scanned_tag
             scanned_tag = content
             print(f"Scanned Tag: {scanned_tag}")
+            
+            #check if tag is allowed
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            if rfid.is_tag_authorized(scanned_tag):
+                email_handler.send_email(f"Dashboard Authorized Login - (Tag:{scanned_tag})", f"At {current_time}, {rfid.get_name_of_tag(scanned_tag)} is here.")
+            else:
+                email_handler.send_email(f"Unauthorized Login Attempt - (Tag:{scanned_tag})", f"At {current_time}, unauthorized user tried accessing the dashboard.")
+                buzzer.sound_buzzer()
+                
         elif msg.topic == "Dashboard/Light/Photo":
             global light_intensity
             light_intensity = content

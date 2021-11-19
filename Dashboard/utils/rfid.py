@@ -1,7 +1,6 @@
 from time import sleep
-from datetime import datetime
 
-from utils import mqtt_server, email_handler
+from utils import mqtt_server
 
 stored_tags = {
     
@@ -63,12 +62,34 @@ def get_led_threshold():
 
 def get_profile_name():
     if is_authorized():
-        return stored_tags[get_tag_in_store()]['name'] 
+        return stored_tags[get_tag_in_store()]['name']
+    
+def get_stored_tag_index(tag):
+    tag = int(tag)
+    for i in range(len(stored_tags)):
+        current_tag = stored_tags[i]
+        if current_tag['tag_id'] == tag:
+            return i
 
+    return -1
+
+def get_name_of_tag(tag):
+    if is_tag_authorized(tag):
+        return stored_tags[get_stored_tag_index(tag)]['name']
+        
 def set_led_threshold(value):
     if is_authorized():
         global stored_tags
         stored_tags[get_tag_in_store()]['led_threshold'] = value
+
+def is_tag_authorized(tag):
+    tag = int(tag)
+    for i in range(len(stored_tags)):
+        current_tag = stored_tags[i]
+        if current_tag['tag_id'] == tag:
+            return True
+        
+    return False
 
 def check_for_scanned_tag():
     global active_tag
@@ -76,11 +97,6 @@ def check_for_scanned_tag():
     if tag != active_tag:
         active_tag = tag
         print("Active tag changed to " + str(active_tag))
-        if is_authorized():
-            now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
-            
-            email_handler.send_email(f"Dashboard Authorized Login - (Tag - {active_tag})", f"At {current_time}, {get_profile_name()} is here.")
         
 def set_tag(tag):
     global active_tag

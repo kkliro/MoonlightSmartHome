@@ -15,16 +15,16 @@ for i, s in enumerate(led_light_states):
 
 for LED in LEDs:
     GPIO.setup(LED, GPIO.OUT)
-
+ 
 def get_resistance():
     # retrieve resistance from nodemcu
     resistance = int(mqtt_server.light_intensity)
     return resistance
-
+ 
 def set_led_output(light, output):
     target = LEDs[light]
     GPIO.output(target, output)
-
+ 
 def get_led_state(index):
     global led_light_states
     return led_light_states[index]
@@ -33,3 +33,6 @@ def set_led_state(index, value):
     global led_light_statess
     led_light_states[index] = value
     set_led_output(index, value)
+    
+set_led_state(0, False)
+set_led_state(1, False)

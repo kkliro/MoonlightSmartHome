@@ -138,6 +138,7 @@ def on_interval_update_graphs(v):
                     g_sent_email = True
                     email_handler.send_email('Enable Fan', 'Would you like to turn on the fan?')
             else:
+                g_sent_email = False
                 motor.change_motor_state(False)
         except RuntimeError as error:
             print('Temperature Threshold Error')

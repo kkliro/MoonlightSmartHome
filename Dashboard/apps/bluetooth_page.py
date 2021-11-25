@@ -13,7 +13,10 @@ import dash_daq as daq
 
 from utils import rfid, bluetooth_handler
 
-last_content = html.Div()
+last_content = html.Div(children=[    
+    html.Br(),
+    html.Div(children=dbc.Table(html.Thead(html.Tr([html.Th("Device Name"), html.Th("Device Address"), html.Th("RSSI")])), bordered=True))  
+])
 
 bluetooth_details_card = dbc.Card(
     [
@@ -154,8 +157,6 @@ def update_nearby_devices(n_clicks):
         html.Br(),
         html.Div(children=table)
     ])
-    
-    print(bluetooth_handler.get_last_checked_time())
     
     last_content = content
 

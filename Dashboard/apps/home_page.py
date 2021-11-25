@@ -17,8 +17,6 @@ import dash_daq as daq
 
 # app = dash.Dash()
 
-led_status = 0
-
 g_temperature = 0
 g_humidity = 0
 

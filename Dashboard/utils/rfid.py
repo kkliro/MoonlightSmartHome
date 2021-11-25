@@ -8,21 +8,24 @@ stored_tags = {
         'tag_id':18847127109,
         'name':'Konstantin K.',
         'temperature_threshold':10.0,
-        'led_threshold':900.0
+        'led_threshold':900.0,
+        'rssi_threshold':2.0
     },
 
     1: {
-        'tag_id':1725312610,
+        'tag_id':17253126109,
         'name':'Earvin-Carl D.',
-        'temperature_threshold':5.0,
-        'led_threshold':60.0
+        'temperature_threshold':29.0,
+        'led_threshold':60.0,
+        'rssi_threshold':4.0
     },
     
     2: {
         'tag_id':2432424213,
         'name':'Andrea T.',
         'temperature_threshold':25.0,
-        'led_threshold':70.0
+        'led_threshold':70.0,
+        'rssi_threshold':3.0
     }
 
 }
@@ -101,3 +104,12 @@ def check_for_scanned_tag():
 def set_tag(tag):
     global active_tag
     active_tag = tag
+    
+def get_rssi_threshold():
+    if is_authorized():
+        return stored_tags[get_tag_in_store()]['rssi_threshold']
+
+def set_rssi_threshold(value):
+    if is_authorized():
+        global stored_tags
+        stored_tags[get_tag_in_store()]['rssi_threshold'] = value

@@ -12,7 +12,7 @@ import dash_bootstrap_components as dbc
 from utils import rfid, mqtt_server
 
 # Connect to your app pages
-from apps import home_page, temperature_page, led_page, unauthorized_page
+from apps import home_page, temperature_page, led_page, unauthorized_page, bluetooth_page
 
 page_was_denied = True
 
@@ -44,6 +44,7 @@ sidebar = html.Div(id='index-sidebar',
                 dbc.NavLink("Home", href="/apps/home_page", active="exact"),
                 dbc.NavLink("Temperature & Humidity", href="/apps/temperature_page", active="exact"),
                 dbc.NavLink("Lights", href="/apps/led_page", active="exact"),
+                dbc.NavLink("Bluetooth Devices", href="/apps/bluetooth_page", active="exact"),
             ],
             horizontal=True,
             pills=True,
@@ -121,6 +122,9 @@ def display_page(pathname):
         elif pathname == '/apps/led_page':
             # return led_page.layout
             new_layout = led_page.layout
+        elif pathname == '/apps/bluetooth_page':
+            # return led_page.layout
+            new_layout = bluetooth_page.layout
         else:
             new_layout = home_page.layout
 

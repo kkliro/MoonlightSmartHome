@@ -21,8 +21,6 @@ motor_state = False
 def change_motor_state(state):
     global motor_state
     motor_state = state
-
-    print(motor_state)
     
     if motor_state:
         pwm.ChangeDutyCycle(50)

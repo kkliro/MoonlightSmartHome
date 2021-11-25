@@ -84,7 +84,7 @@ layout = html.Div([
     
     dcc.Interval(
         id='temperature-interval',
-        interval=1*1000, # 5 seconds
+        interval=1*1000, # 1 seconds
         n_intervals=0
     )
 ])

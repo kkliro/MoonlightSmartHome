@@ -11,11 +11,11 @@ from app import app
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 
-from utils import rfid, bluetooth_handler
+from utils import rfid, read_bluetooth_devices
 
-last_content = html.Div(children=[    
+last_content = html.Div(children=[  
     html.Br(),
-    html.Div(children=dbc.Table(html.Thead(html.Tr([html.Th("Device Name"), html.Th("Device Address"), html.Th("RSSI")])), bordered=True))  
+    html.Div(children=dbc.Table(html.Thead(html.Tr([html.Th("Device ID"), html.Th("RSSI")])), bordered=True))  
 ])
 
 bluetooth_details_card = dbc.Card(
@@ -29,7 +29,7 @@ bluetooth_details_card = dbc.Card(
                     dbc.Row(
                         [
                             dbc.Col(dbc.Button('Find Nearby Devices', id='bt-find-btn', color="success", className="me-1"), width="auto"),
-                            dbc.Col(html.P(id='last-check-time-bt', children=[f'Last Check: {bluetooth_handler.get_last_checked_time()}']), width="auto"),
+                            dbc.Col(html.P(id='last-check-time-bt', children=[f'Last Check: {read_bluetooth_devices.get_last_checked_time()}']), width="auto"),
                         ]),
                 ]),
                 html.Div(id='bt-check-results', children=last_content),
@@ -48,7 +48,7 @@ bluetooth_threshold_card = dbc.Card(
                 html.H4("Bluetooth Threshold Settings", className="card-title", style={'text-align':'center'}),
                 html.Br(),
                 html.P(id='bt-threshold-display', children=f"RSSI Threshold: {rfid.get_rssi_threshold()}"),
-                html.P(id='bt-threshold-display-hidden', children=f"Temperature Threshold: {rfid.get_rssi_threshold()}", style={'display':'none'}),
+                html.P(id='bt-threshold-display-hidden', children=f"RSSI Threshold: {rfid.get_rssi_threshold()}", style={'display':'none'}),
                 html.Br(),
                 dbc.Input(id='bt-threshold-input', type='number', min=0,max=255, placeholder='RSSI Threshold'),
                 html.Br(),
@@ -62,8 +62,8 @@ bluetooth_threshold_card = dbc.Card(
 
 cards = dbc.Row(
     [
-        dbc.Col(bluetooth_threshold_card, width="auto"),
         dbc.Col(bluetooth_details_card, width="auto"),
+        dbc.Col(bluetooth_threshold_card, width="auto"),
     ]
 )
 
@@ -73,6 +73,12 @@ layout = html.Div([
     dcc.Interval(
         id='bt-interval',
         interval=1*1000, # 1 seconds
+        n_intervals=0
+    ),
+    
+    dcc.Interval(
+        id='bt-check-interval',
+        interval=1*30000, # 1 seconds
         n_intervals=0
     )
 ])
@@ -114,17 +120,22 @@ def on_interval_update_bt_displays(v):
         Output("last-check-time-bt", "children"),
     ],
     [
-        Input("bt-find-btn", "n_clicks"),
+        Input("bt-check-interval", "n_intervals"),
     ],
 )
-def update_nearby_devices(n_clicks):
+def update_nearby_devices(n_intervals):
     global last_content
     
-    if n_clicks == None:
-        return [last_content, f"Last Checked: {bluetooth_handler.get_last_checked_time()}"]
+    if not rfid.is_authorized():
+        raise PreventUpdate
     
-    device_information = bluetooth_handler.get_connected_devices_info()
+#     if n_clicks == None:
+#         return [last_content, f"Last Checked: {read_bluetooth_devices.get_last_checked_time()}"]
+    
+    device_information = read_bluetooth_devices.scan_devices()
     device_details = device_information['details']
+    
+    print(f'Device Info: {device_information}')
     
     details_rows = []
     
@@ -132,12 +143,11 @@ def update_nearby_devices(n_clicks):
     
     if device_information['device_count'] > 0:  
         for device in device_details:
-            name = device_details[device]['name']
-            rssi = device_details[device]['rssi']
-            addr = device_details[device]['addr']
+            device_id = device
+            rssi = device_details[device_id]
             
             if float(rssi) >= rfid.get_rssi_threshold():
-                row = html.Tr([html.Td(name), html.Td(addr), html.Td(rssi)])
+                row = html.Tr([html.Td(device_id), html.Td(rssi)])
                 details_rows.append(row)
             else:
                 num_below = num_below + 1
@@ -145,7 +155,7 @@ def update_nearby_devices(n_clicks):
     number_of_devices = int(device_information['device_count']) - num_below
     
     table_header = [
-        html.Thead(html.Tr([html.Th("Device Name"), html.Th("Device Address"), html.Th("RSSI")]))
+        html.Thead(html.Tr([html.Th("Device ID"), html.Th("RSSI")]))
     ]
     table_body = [html.Tbody(details_rows)]
 
@@ -160,5 +170,5 @@ def update_nearby_devices(n_clicks):
     
     last_content = content
 
-    return [last_content, f"Last Checked: {bluetooth_handler.get_last_checked_time()}"]
+    return [last_content, f"Last Checked: {read_bluetooth_devices.get_last_checked_time()}"]
 

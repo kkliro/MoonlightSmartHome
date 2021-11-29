@@ -92,9 +92,7 @@ def get_connected_devices_info():
         device_details[f'device_details_{index}'] = {'addr':addr, 'name':name, 'rssi':rssi}
         index = index + 1
         
-    info = {'device_count':number_of_devices, 'details':device_details}
-    
-    
+    info = {'device_count':number_of_devices, 'details':device_details}    
     
     now = datetime.now()
     

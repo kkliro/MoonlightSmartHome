@@ -19,11 +19,18 @@ light_card = dbc.Card(
         # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
-                html.H4("Light Readings", className="card-title", style={'text-align':'center'}),
+                html.H4("Light Reading", className="card-title", style={'text-align':'center'}),
                 html.Br(),
                 html.P(id='resistance-state', children=f"Light Intensity: {led.get_resistance()}"),
                 html.Br(),
                 html.H4("Light States", className='card-text'),
+                daq.Tank(
+                    id='led-resistance-tank',
+                    value=5,
+                    min=0,
+                    max=1024,
+                    #style={'margin-left': '50px'}
+                ),
                 html.Div(id='led-state', children=f"Light State: OFF"),
             ]
         ),
@@ -52,10 +59,35 @@ light_threshold_card = dbc.Card(
     style={"width": "30rem"},
 )
 
+led1_card = dbc.Card(
+    [
+        # dbc.CardHeader("This is the header"),
+        dbc.CardBody(
+            [
+                html.H4("Toggle Light", className="card-title", style={'text-align':'center'}),
+                html.Br(),
+                html.P("Light State: OFF", id='light1-state'),
+                dbc.Row([
+                    dbc.Col(html.P("Toggle LED 1: "), width='auto'),               
+                    
+                dbc.Col(daq.BooleanSwitch(
+                    on=False,
+                    id=f"toggle-light-button",
+                    color="#9B51E0",
+                    ), width='auto'),
+                ]),
+            ]
+        ),
+        # dbc.CardFooter("This is the footer"),
+    ],
+    style={"width": "30rem"},
+)
+
 cards = dbc.Row(
     [
         dbc.Col(light_card, width="auto"),
         dbc.Col(light_threshold_card, width="auto"),
+        dbc.Col(led1_card, width="auto"),
     ]
 )
 
@@ -99,6 +131,7 @@ def update_led_threshold(n_clicks, value):
 @app.callback(
     [
         Output('led-state', 'children'),
+        Output('led-resistance-tank', 'value'),
         Output('resistance-state', 'children'),
         Output("led-threshold-display", "children"),
     ],
@@ -148,4 +181,17 @@ def on_interval_update_led(v):
 
         count = count + 1
 
-    return [p_elements, f"Light Intensity: {led.get_resistance()}", f"Light Threshold: {rfid.get_led_threshold()}"] 
+    return [p_elements, led.get_resistance(), f"Light Intensity: {led.get_resistance()}", f"Light Threshold: {rfid.get_led_threshold()}"] 
+
+@app.callback(
+    Output('light1-state', 'children'),
+    Input('toggle-light-button', 'on')
+)
+def update_led1_output(on):
+    state = "OFF"
+    if on:
+        state = "ON"
+    
+    led.set_led_output(0, on);
+    
+    return f'Light State: {state}'

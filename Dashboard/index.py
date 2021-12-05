@@ -36,7 +36,7 @@ CONTENT_STYLE = {
 
 sidebar = html.Div(id='index-sidebar',
     children=[
-        html.H2("Smart Home Dashboard", className="display-4"),
+        html.H2("Moonlight Smart Home", className="display-4"),
         html.H4(id='profile-name', children="Current User: Konstantin K."),
         html.Hr(),
         dbc.Nav(
@@ -131,4 +131,4 @@ def display_page(pathname):
     return [new_layout, {'display':sidebar_display_style}]
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

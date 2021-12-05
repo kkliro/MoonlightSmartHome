@@ -26,7 +26,6 @@ def set_led_output(light, output):
     GPIO.output(target, output)
  
 def get_led_state(index):
-    global led_light_states
     return led_light_states[index]
 
 def set_led_state(index, value):

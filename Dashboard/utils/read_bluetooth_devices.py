@@ -45,5 +45,4 @@ def scan_devices():
     return(info)
     
 def get_last_checked_time():
-    global last_checked_time
     return last_checked_time

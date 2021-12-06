@@ -3,51 +3,12 @@ from time import sleep
 from utils import mqtt_server
 
 import sqlite3
+import threading
 
 con = sqlite3.connect('user_profiles.db',check_same_thread=False)
 cur = con.cursor()
 
-def get_temp_threshold(rfid_tag):
-    if rfid_tag == "None":
-        return 0
-    cur.execute(f'SELECT temperature_threshold FROM preference_dict WHERE tag="{rfid_tag}"')
-    return cur.fetchone()[0]
-
-
-def get_photoresistor_threshold(rfid_tag):
-    if rfid_tag == "None":
-            return 0
-    cur.execute(
-        f'SELECT photoresistor_threshold FROM preference_dict WHERE tag="{rfid_tag}"')
-    return cur.fetchone()[0]
-
-
-def set_temp_threshold(rfid_tag, threshold):
-    cur.execute(
-        f'UPDATE preference_dict SET temperature_threshold = {threshold} WHERE tag="{rfid_tag}"')
-    con.commit()
-
-
-def set_photoresistor_threshold(rfid_tag, threshold):
-    print("in set", threshold)
-    cur.execute(
-        f'UPDATE preference_dict SET photoresistor_threshold = {threshold} WHERE tag="{rfid_tag}"')
-    con.commit()
-
-
-def get_auth_user():
-      with open("current_rfid_tag.txt", "r+") as file:
-        return file.read()
-
-
-def set_auth_user(rfid_tag):
-    with open("current_rfid_tag.txt", "w") as file:
-        file.write(rfid_tag)
-        file.close() 
-
-def get_user_name(tag):
-    cur.execute(f'SELECT name FROM preference_dict WHERE tag="{tag}"')
-    return cur.fetchone()[0]
+lock = threading.Lock()
 
 stored_tags = {
     
@@ -88,58 +49,128 @@ def get_tag_in_store():
 
     return -1
 
+def check_if_exists(tag):
+    try:
+        lock.acquire(True)
+        cur.execute(f'SELECT EXISTS(SELECT user_id FROM user_preferences WHERE user_id="{tag}")')
+        return cur.fetchone()[0]
+    finally:
+        lock.release()
+
 def is_authorized():
-    global active_tag
-    for i in range(len(stored_tags)):
-        current_tag = stored_tags[i]
-        if current_tag['tag_id'] == active_tag:
-            return True
-        
+    if check_if_exists(active_tag) == 1:
+        return True
     return False
+#     global active_tag
+#     for i in range(len(stored_tags)):
+#         current_tag = stored_tags[i]
+#         if current_tag['tag_id'] == active_tag:
+#             return True
+#         
+#     return False
 
 def get_temperature_threshold():
     if is_authorized():
-        return stored_tags[get_tag_in_store()]['temperature_threshold']
+#         return stored_tags[get_tag_in_store()]['temperature_threshold']
+        try:
+            lock.acquire(True)
+            cur.execute(f'SELECT temp_threshold FROM user_preferences WHERE user_id="{active_tag}"')
+            return cur.fetchone()[0]
+        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("No data found")
+            #print(error.args[0])
+        finally:
+            lock.release()
+        
 
 def set_temperature_threshold(value):
     if is_authorized():
-        global stored_tags
-        stored_tags[get_tag_in_store()]['temperature_threshold'] = value
+#         global stored_tags
+#         stored_tags[get_tag_in_store()]['temperature_threshold'] = value
+        try:
+            lock.acquire(True)
+            cur.execute(f'UPDATE user_preferences SET temp_threshold = {value} WHERE user_id="{active_tag}"')
+            con.commit()
+        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("No data found")
+            #print(error.args[0])
+        finally:
+            lock.release()
 
 def get_led_threshold():
     if is_authorized():
-        return stored_tags[get_tag_in_store()]['led_threshold']
+#         return stored_tags[get_tag_in_store()]['led_threshold']
+        try:
+            lock.acquire(True)
+            cur.execute(f'SELECT light_threshold FROM user_preferences WHERE user_id="{active_tag}"')
+            return cur.fetchone()[0]
+        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("No data found")
+            #print(error.args[0])
+        finally:
+            lock.release()
 
 def get_profile_name():
     if is_authorized():
-        return stored_tags[get_tag_in_store()]['name']
+        try:
+            lock.acquire(True)
+            cur.execute(f'SELECT name FROM user_preferences WHERE user_id="{active_tag}"')
+            return cur.fetchone()[0]
+        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("No data found")
+            #print(error.args[0])
+        finally:
+            lock.release()
+        #return stored_tags[get_tag_in_store()]['name']
     
-def get_stored_tag_index(tag):
-    tag = int(tag)
-    for i in range(len(stored_tags)):
-        current_tag = stored_tags[i]
-        if current_tag['tag_id'] == tag:
-            return i
-
-    return -1
+# def get_stored_tag_index(tag):
+#     tag = int(tag)
+#     for i in range(len(stored_tags)):
+#         current_tag = stored_tags[i]
+#         if current_tag['tag_id'] == tag:
+#             return i
+# 
+#     return -1
 
 def get_name_of_tag(tag):
     if is_tag_authorized(tag):
-        return stored_tags[get_stored_tag_index(tag)]['name']
+        try:
+            lock.acquire(True)
+            cur.execute(f'SELECT name FROM user_preferences WHERE user_id="{tag}"')
+            return cur.fetchone()[0]
+        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("No data found")
+        finally:
+            lock.release()
+            #print(error.args[0])
+        #return stored_tags[get_tag_in_store()]['name']
+        #return stored_tags[get_stored_tag_index(tag)]['name']
         
 def set_led_threshold(value):
     if is_authorized():
-        global stored_tags
-        stored_tags[get_tag_in_store()]['led_threshold'] = value
+#         global stored_tags
+#         stored_tags[get_tag_in_store()]['led_threshold'] = value
+        try:
+            lock.acquire(True)
+            cur.execute(f'UPDATE user_preferences SET light_threshold = {value} WHERE user_id="{active_tag}"')
+            con.commit()
+        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("No data found")
+            #print(error.args[0])
+        finally:
+            lock.release()
 
 def is_tag_authorized(tag):
     tag = int(tag)
-    for i in range(len(stored_tags)):
-        current_tag = stored_tags[i]
-        if current_tag['tag_id'] == tag:
-            return True
-        
+    if check_if_exists(tag) == 1:
+        return True
     return False
+#     for i in range(len(stored_tags)):
+#         current_tag = stored_tags[i]
+#         if current_tag['tag_id'] == tag:
+#             return True
+#         
+#     return False
 
 def check_for_scanned_tag():
     global active_tag
@@ -154,9 +185,25 @@ def set_tag(tag):
     
 def get_rssi_threshold():
     if is_authorized():
-        return stored_tags[get_tag_in_store()]['rssi_threshold']
+        try:
+            lock.acquire(True)
+            cur.execute(f'SELECT rssi_threshold FROM user_preferences WHERE user_id="{active_tag}"')
+            return cur.fetchone()[0]
+        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("No data found")
+        finally:
+            lock.release()
+#         return stored_tags[get_tag_in_store()]['rssi_threshold']
 
 def set_rssi_threshold(value):
     if is_authorized():
-        global stored_tags
-        stored_tags[get_tag_in_store()]['rssi_threshold'] = value
+        try:
+            lock.acquire(True)
+            cur.execute(f'UPDATE user_preferences SET rssi_threshold = {value} WHERE user_id="{active_tag}"')
+            con.commit()
+        except RuntimeError as error:     # Errors happen fairly often, DHT's are hard to read, just keep going
+            print("No data found")
+        finally:
+            lock.release()
+#         global stored_tags
+#         stored_tags[get_tag_in_store()]['rssi_threshold'] = value

@@ -7,5 +7,5 @@ app = dash.Dash(__name__, suppress_callback_exceptions=True,
                             'content': 'width=device-width, initial-scale=1.0'}],
                 external_stylesheets=[dbc.themes.CYBORG], 
                 )
-app.title = "Smart Home Dashboard"
+app.title = "Moonlight Smart Home Dashboard"
 server = app.server

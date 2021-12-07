@@ -34,7 +34,7 @@ light_card = dbc.Card(
                     #style={'margin-left': '50px'}
                 ),
                 html.Br(),
-                html.H4("Treshold Lights Status", className='card-text'),
+                html.H4("Threshold Lights Status", className='card-text'),
                 html.Div(id='led-state', children=f"Light 2 State: OFF"),
             ]
         ),
@@ -77,6 +77,7 @@ led1_card = dbc.Card(
                 dbc.Col(daq.BooleanSwitch(
                     on=led.get_led_state(0),
                     id=f"toggle-light-button",
+                    persistence = True,
                     color="#9B51E0",
                     ), width='auto'),
                 ]),

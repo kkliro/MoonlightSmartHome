@@ -112,21 +112,47 @@ def display_page(pathname):
     if not rfid.is_authorized():
         sidebar_display_style = 'none'
         new_layout = unauthorized_page.layout 
-    else:    
+    else:
+        layout_elements = None
         if pathname == '/apps/home_page':
             # return home_page.layout
-            new_layout = home_page.layout
+            new_layout = html.Div(children=[
+                html.Div(home_page.layout, style={'display':'block'}),
+                html.Div(temperature_page.layout, style={'display':'none'}),
+                html.Div(led_page.layout, style={'display':'none'}),
+                html.Div(bluetooth_page.layout, style={'display':'none'}),
+            ])
         if pathname == '/apps/temperature_page':
             # return temperature_page.layout
-            new_layout = temperature_page.layout
+            new_layout = html.Div(children=[
+                html.Div(home_page.layout, style={'display':'none'}),
+                html.Div(temperature_page.layout, style={'display':'block'}),
+                html.Div(led_page.layout, style={'display':'none'}),
+                html.Div(bluetooth_page.layout, style={'display':'none'}),
+            ])
         elif pathname == '/apps/led_page':
             # return led_page.layout
-            new_layout = led_page.layout
+            new_layout = html.Div(children=[
+                html.Div(home_page.layout, style={'display':'none'}),
+                html.Div(temperature_page.layout, style={'display':'none'}),
+                html.Div(led_page.layout, style={'display':'block'}),
+                html.Div(bluetooth_page.layout, style={'display':'none'}),
+            ])
         elif pathname == '/apps/bluetooth_page':
             # return led_page.layout
-            new_layout = bluetooth_page.layout
+            new_layout = html.Div(children=[
+                html.Div(home_page.layout, style={'display':'none'}),
+                html.Div(temperature_page.layout, style={'display':'none'}),
+                html.Div(led_page.layout, style={'display':'none'}),
+                html.Div(bluetooth_page.layout, style={'display':'block'}),
+            ])
         else:
-            new_layout = home_page.layout
+            new_layout = html.Div(children=[
+                html.Div(home_page.layout, style={'display':'block'}),
+                html.Div(temperature_page.layout, style={'display':'none'}),
+                html.Div(led_page.layout, style={'display':'none'}),
+                html.Div(bluetooth_page.layout, style={'display':'none'}),
+            ])
 
     return [new_layout, {'display':sidebar_display_style}]
 

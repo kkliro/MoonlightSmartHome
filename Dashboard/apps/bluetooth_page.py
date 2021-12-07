@@ -26,11 +26,7 @@ bluetooth_details_card = dbc.Card(
                 html.H4("Bluetooth Device Detection", className="card-title", style={'text-align':'center'}),
                 html.Br(),
                 html.Div(children=[
-                    dbc.Row(
-                        [
-                            dbc.Col(dbc.Button('Find Nearby Devices', id='bt-find-btn', color="success", className="me-1"), width="auto"),
-                            dbc.Col(html.P(id='last-check-time-bt', children=[f'Last Check: {read_bluetooth_devices.get_last_checked_time()}']), width="auto"),
-                        ]),
+                    html.P(id='last-check-time-bt', children=[f'Last Check: {read_bluetooth_devices.get_last_checked_time()}']),
                 ]),
                 html.Div(id='bt-check-results', children=last_content),
             ]

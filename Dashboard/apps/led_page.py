@@ -1,4 +1,3 @@
-import plotly.graph_objects as go
 import dash
 from dash import dcc
 from dash import html
@@ -26,13 +25,16 @@ light_card = dbc.Card(
                 html.P(id='resistance-state', children=f"Light Intensity: {led.get_resistance()}"),
                 html.Br(),
                 html.H4("Room Light Source", className='card-text'),
+                html.Br(),
                 daq.Tank(
                     id='led-resistance-tank',
                     value=5,
                     min=0,
                     max=1024,
-                    #style={'margin-left': '50px'}
+                    scale={'interval':1, 'labelInterval':150},
+                    style={'margin-left': '60px'}
                 ),
+                html.Br(),
                 html.Br(),
                 html.H4("Threshold Lights Status", className='card-text'),
                 html.Div(id='led-state', children=f"Light 2 State: OFF"),

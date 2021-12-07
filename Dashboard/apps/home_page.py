@@ -122,9 +122,9 @@ layout = html.Div([
 
 def get_on_or_off(value):
     if (value == 0 or not value):
-        return 'off'
+        return 'OFF'
     else:
-        return 'on'
+        return 'ON'
 
 def get_component_states():
     component_states = {

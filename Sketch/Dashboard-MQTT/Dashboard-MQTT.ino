@@ -98,14 +98,15 @@ void loop() {
   if (!client.loop())
     client.connect("smarthome_dashboard_iotvanier");
 
+  // Read Photoresistor Resistance and publish to MQTT
   int sensorValue = analogRead(A0);
   String photoResistorVal = String(sensorValue);
 
   char cbuf[30];
   photoResistorVal.toCharArray(cbuf, photoResistorVal.length() + 1);
-  client.publish("Dashboard/Light/Photo", cbuf);
-  //Serial.println(cbuf);
+  client.publish("Dashboard/Light/Photo", cbuf); 
 
+  // Check for RFID scan and publish to MQTT if a tag was scanned
   if ( ! rfid.PICC_IsNewCardPresent())
     return;
   if (rfid.PICC_ReadCardSerial()) {

@@ -13,13 +13,11 @@ import dash_daq as daq
 
 from utils import email_handler, temperature, motor, rfid
 
-# app = dash.Dash()
-
 g_sent_email = False
 
+# Temperature widget to display current temperature reading
 temp_gauge_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Temperature Reading", className="card-title", style={'text-align':'center'}),
@@ -29,14 +27,13 @@ temp_gauge_card = dbc.Card(
                 html.P(id='temp-lastval-display', children=f"Last Recorded Temperature Threshold: {temperature._temperature[1]}°C"),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
 
+# Humidity widget to display current humidity reading
 humidity_gauge_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Humidity Reading", className="card-title", style={'text-align':'center'}),
@@ -46,14 +43,13 @@ humidity_gauge_card = dbc.Card(
                 html.P(id='hum-lastval-display', children=f"Last Recorded Humidity Threshold: {temperature._humidity[1]}%"),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
 
+# Temperature widget to display threshold settings
 temp_threshold_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Temperature Threshold Settings", className="card-title", style={'text-align':'center'}),
@@ -66,7 +62,6 @@ temp_threshold_card = dbc.Card(
                 dbc.Button('Update Threshold', id='temp-change-threshold', color="success", className="me-1"),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
@@ -79,6 +74,7 @@ cards = dbc.Row(
     ]
 )
 
+# Layout of temperature page
 layout = html.Div([
     cards,
     
@@ -89,6 +85,7 @@ layout = html.Div([
     )
 ])
 
+# Called whenever user clicks button to update temperature threshold
 @app.callback(
     [
         Output("temp-threshold-display-hidden", "children"),
@@ -111,6 +108,7 @@ def update_temp_threshold(n_clicks, value):
 
     return [f"Temperature Threshold: {rfid.get_temperature_threshold()}"]
 
+# Interval based callback used to update gauges
 @app.callback(
     [
         Output('gauge-temp', 'figure'),
@@ -145,24 +143,18 @@ def on_interval_update_graphs(v):
         
     if humidity_read != None:
         temperature.set_humidity(humidity_read)
-    
-    #temperature_read = 20;
-    #humidity_read = 50;
+
 
     email_handler.email_reader()
     
     if g_sent_email and not motor.motor_state:
         g_sent_email = True
 
-    # elif temperature_read <= temperature_threshold:
-    #     print("Send email asking to turn fan off")
-
     
     temp_fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
         value = temperature._temperature[0],
         domain = {'x': [0, 1], 'y': [0, 1]},
-        # title = {'text': "Temperature",'font': {'size': 24}},
         delta = {'reference': temperature._temperature[1], 'increasing': {'color': "lightgreen"} },
         gauge = {'axis': {'range': [-30, 30], 'tickwidth': 1, 'tickcolor': "darkblue"},
                 'bar': {'color': "darkblue"},
@@ -181,7 +173,6 @@ def on_interval_update_graphs(v):
         mode = "gauge+number+delta",
         value = temperature._humidity[0],
         domain = {'x': [0, 1], 'y': [0, 1]},
-        # title = {'text': "Humidity",'font': {'size': 24}},
         delta = {'reference': temperature._humidity[1], 'increasing': {'color': "lightgreen"} },
         gauge = {'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
                 'bar': {'color': "darkblue"},

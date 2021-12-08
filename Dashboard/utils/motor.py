@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 
 GPIO.setwarnings(False)
 
+# Pins on L293D
 input1 = 24
 enable1 = 25
 
@@ -18,6 +19,7 @@ GPIO.output(enable1, 1)
 
 motor_state = False
 
+# Change running state of motor based on Duty Cycle
 def change_motor_state(state):
     global motor_state
     motor_state = state

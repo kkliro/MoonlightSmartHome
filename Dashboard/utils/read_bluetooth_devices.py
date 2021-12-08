@@ -13,11 +13,14 @@ def scan_devices():
     device_details = {}
     device_count = 0
     
+    # Command to run JS file to query Bluetooth devices
     bashCommand = "sudo node /home/pi/SmartHome/Dashboard/utils/get_devices.js >| output.txt"
     devices = os.system(bashCommand)
     device_list = []
     rssi_list = []
     information_dict = {}
+    
+    # Find unique devices
     with open('output.txt',encoding='utf-8-sig', errors='ignore') as devices:
         sp = devices.read().splitlines()
 
@@ -40,9 +43,12 @@ def scan_devices():
     
     now = datetime.now()
     
+    # Set last checked time to current time
+    
     last_checked_time = now.strftime("%H:%M:%S")
         
     return(info)
     
+# Get the last checked time of when the Bluetooth devices were scanned
 def get_last_checked_time():
     return last_checked_time

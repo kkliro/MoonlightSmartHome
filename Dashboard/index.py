@@ -16,24 +16,19 @@ from apps import home_page, temperature_page, led_page, unauthorized_page, bluet
 
 page_was_denied = True
 
-# styling the sidebar
+# Sidebar styling
 PAGE_STYLE = {
-    # "position": "fixed",
-    # "top": 0,
-    # "left": 0,
-    # "bottom": 0,
-    # "width": "16rem",
     "padding": "2rem 1rem",
-    # "background-color": "#f8f9fa",
 }
 
-# padding for the page content
+# Padding for the page content
 CONTENT_STYLE = {
     "margin-left": "18rem",
     "margin-right": "2rem",
     "padding": "2rem 1rem",
 }
 
+# Sidebar HTML structure
 sidebar = html.Div(id='index-sidebar',
     children=[
         html.H2("Moonlight Smart Home", className="display-4"),
@@ -54,6 +49,7 @@ sidebar = html.Div(id='index-sidebar',
     style={'display':'block'},
 )
 
+# Default application layout when dashboard is first loaded
 app.layout = html.Div(children=[
     sidebar,
     dcc.Location(id='url', refresh=False),
@@ -72,6 +68,7 @@ app.layout = html.Div(children=[
     ),
 ])
 
+# Callback whenever the rfid-name-interval is triggered, to display login name
 @app.callback([
         Output('profile-name', 'children')
     ],
@@ -79,10 +76,10 @@ app.layout = html.Div(children=[
 def on_update_rfid_name(v):
     return [f"Current User: {rfid.get_profile_name()}"]
 
+# Callback whenever the rfid-check-display is triggered, to display unauthorized page if user is denied
 @app.callback([
         Output('rfid-check-display', 'children'),
-        Output('url', 'pathname'),
-#         Output('profile-name', 'children'),        
+        Output('url', 'pathname'),       
     ],
     [Input('rfid-check-interval', 'n_intervals')])
 def on_check_rfid_interval(v):
@@ -97,9 +94,9 @@ def on_check_rfid_interval(v):
     
     page_was_denied = not allowed 
         
-#     return ["Text", "/apps/home_page", f"Current User: {rfid.get_profile_name()}"]
     return ["Text", "/apps/home_page"]
 
+# Callback whenever a hyperlink is pressed, nagivates through the application pages
 @app.callback([
                 Output('page-content', 'children'),
                 Output('index-sidebar', 'style'),
@@ -123,7 +120,6 @@ def display_page(pathname):
                 html.Div(bluetooth_page.layout, style={'display':'none'}),
             ])
         if pathname == '/apps/temperature_page':
-            # return temperature_page.layout
             new_layout = html.Div(children=[
                 html.Div(home_page.layout, style={'display':'none'}),
                 html.Div(temperature_page.layout, style={'display':'block'}),
@@ -131,7 +127,6 @@ def display_page(pathname):
                 html.Div(bluetooth_page.layout, style={'display':'none'}),
             ])
         elif pathname == '/apps/led_page':
-            # return led_page.layout
             new_layout = html.Div(children=[
                 html.Div(home_page.layout, style={'display':'none'}),
                 html.Div(temperature_page.layout, style={'display':'none'}),
@@ -139,7 +134,6 @@ def display_page(pathname):
                 html.Div(bluetooth_page.layout, style={'display':'none'}),
             ])
         elif pathname == '/apps/bluetooth_page':
-            # return led_page.layout
             new_layout = html.Div(children=[
                 html.Div(home_page.layout, style={'display':'none'}),
                 html.Div(temperature_page.layout, style={'display':'none'}),

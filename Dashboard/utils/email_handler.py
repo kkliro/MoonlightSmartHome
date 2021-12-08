@@ -10,12 +10,13 @@ email_debounce = False
 
 sys_admin_email = 'iotvanier.smarthome@gmail.com'
 sys_admin_pw = 'banana123!'
-client_email = 'iotvanier.smarthome@gmail.com' #change to client email
-client_pw = 'banana123!' #change to client pw
+client_email = 'iotvanier.smarthome@gmail.com'
+client_pw = 'banana123!'
 
+# Send email based on subject and message passed to the method
 def send_email(e_subject, e_text):
     global email_debounce
-    if (not email_debounce):
+    if (not email_debounce): # Prevent multiple emails from being sent simultaneously
         email_debounce = True
 
         sender = sys_admin_email
@@ -33,6 +34,7 @@ def send_email(e_subject, e_text):
 
         print("Sending")
 
+        #Send email
         with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
             server.login(sender, pw)
             server.sendmail(sender, receiver, message)
@@ -41,6 +43,7 @@ def send_email(e_subject, e_text):
         
         email_debounce = False
 
+# Loops through gmail account and reads unread emails
 def email_reader():
     global sent_fan_on
 
@@ -85,10 +88,9 @@ def email_reader():
             if part.get_content_type() == "text/plain":
                 body = part.get_payload(decode=True)   
                 body = body.decode('utf-8').split("\r\n")[0].strip().lower()
-                if body[0:3] == "yes":
+                if body[0:3] == "yes": # If response is yes then turn on fan 
                     if 'Enable Fan' in subject:
                         motor.change_motor_state(True)
-                        # sent_fan_on = False
 
             else:
                 continue

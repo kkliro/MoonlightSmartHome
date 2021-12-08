@@ -15,14 +15,12 @@ from utils import led, temperature, motor
 
 import dash_daq as daq
 
-# app = dash.Dash()
+g_temperature = 0 # global temperature variable
+g_humidity = 0 # global humidity variable
 
-g_temperature = 0
-g_humidity = 0
-
+# Temperature Gauge Widget
 temperature_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Temperature", className="card-title", style={'text-align':'center'}),
@@ -30,7 +28,6 @@ temperature_card = dbc.Card(
                     id='temperature-gauge-1',
                     showCurrentValue=True,
                     units="°C",
-                    # color={"gradient":True,"ranges":{"blue":[-30, 10],"white":[10,22],"red":[22,30]}},
                     color='lightblue',
                     value=2,
                     size=300,
@@ -41,14 +38,13 @@ temperature_card = dbc.Card(
                 html.P("Temperature Reading", id='temperature-card-output', className="card-text", style={'font-size':'20px'}),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
 
+# Humidity Gauge Widget
 humidity_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Humidity", className="card-title", style={'text-align':'center'}),
@@ -56,7 +52,6 @@ humidity_card = dbc.Card(
                     id='humidity-gauge-1',
                     showCurrentValue=True,
                     units="%",
-                    # color={"gradient":True,"ranges":{"blue":[-30, 10],"white":[10,22],"red":[22,30]}},
                     color='lightgreen',
                     value=2,
                     size=300,
@@ -67,35 +62,32 @@ humidity_card = dbc.Card(
                 html.P("Humidity Reading", id='humidity-card-output', className="card-text", style={'font-size':'20px'}),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
 
+# Light State Widget
 light_status_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Lights", className="card-title", style={'text-align':'center'}),
                 dcc.Markdown("LED: ON", id='led-states-output', className="card-text", style={'font-size':'17px', "white-space": "pre"}),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
 
+# Motor State Widget
 motor_status_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Fan", className="card-title", style={'text-align':'center'}),
                 html.P("Fan: ON", id='fan-states-output', className="card-text", style={'font-size':'17px'}),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "20rem"},
 )
@@ -109,6 +101,7 @@ cards = dbc.Row(
     ]
 )
 
+# Layout of home page
 layout = html.Div([
 
     cards,
@@ -120,12 +113,14 @@ layout = html.Div([
     ),
 ])
 
+# Convert value to string
 def get_on_or_off(value):
     if (value == 0 or not value):
         return 'OFF'
     else:
         return 'ON'
 
+# Get state type of components
 def get_component_states():
     component_states = {
       "leds": None,
@@ -142,6 +137,7 @@ def get_component_states():
 
     return component_states
 
+# Update the gauges every set interval time (1 second)
 @app.callback(
     [
         Output('temperature-gauge-1', 'value'),

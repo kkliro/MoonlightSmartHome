@@ -8,11 +8,10 @@ from dash.exceptions import PreventUpdate
 
 from app import app
 
-# from utils import email, led
-
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 
+# Layout for anauthorized user
 layout = html.Div(style={'text-align':'center'},children=[
     html.Br(),
     html.Br(),

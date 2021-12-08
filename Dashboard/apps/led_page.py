@@ -15,9 +15,9 @@ import dash_daq as daq
 light1_state = "OFF"
 light2_state = "OFF"
 
+# Widget to display light source and tank
 light_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Light Reading", className="card-title", style={'text-align':'center'}),
@@ -40,14 +40,13 @@ light_card = dbc.Card(
                 html.Div(id='led-state', children=f"Light 2 State: OFF"),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
 
+# Widget to display threshold settings
 light_threshold_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Light Threshold Settings", className="card-title", style={'text-align':'center'}),
@@ -60,14 +59,13 @@ light_threshold_card = dbc.Card(
                 dbc.Button('Update Threshold', id='led-change-threshold', color="success", className="me-1"),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
 
+# Widget to display togglable LED lights
 led1_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Togglable Lights", className="card-title", style={'text-align':'center'}),
@@ -85,7 +83,6 @@ led1_card = dbc.Card(
                 ]),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
@@ -99,8 +96,6 @@ cards = dbc.Row(
 )
 
 layout = html.Div([
-    # html.H2(children="Lights Page"),
-
     cards,
     
     dcc.Interval(
@@ -111,6 +106,7 @@ layout = html.Div([
     
 ])
 
+# Set light thresold callback
 @app.callback(
     [
         Output("led-threshold-display-hidden", "children"),
@@ -135,6 +131,7 @@ def update_led_threshold(n_clicks, value):
 
     return [f"Light Threshold: {rfid.get_led_threshold()}"]
 
+# Update light state and tank every interval (1 second)
 @app.callback(
     [
         Output('led-state', 'children'),
@@ -166,6 +163,7 @@ def on_interval_update_led(v):
 
     return [f"Light 2 State: {light2_state}", led.get_resistance(), f"Light Intensity: {led.get_resistance()}", f"Light Threshold: {rfid.get_led_threshold()}"] 
 
+# Update LED 1 when switch is toggled
 @app.callback(
     Output('light1-state', 'children'),
     Input('toggle-light-button', 'on')

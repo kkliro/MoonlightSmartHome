@@ -5,20 +5,18 @@ from utils import email_handler, rfid, buzzer
 from datetime import datetime
 
 client = paho.Client("client-007")
-# broker = 'broker.emqx.io'
 broker = 'localhost'
 port = 1883
 topics = [("Dashboard/RFID/Tag",0),("Dashboard/Light/Photo",1)]
-# generate client ID with pub prefix randomly
+# Generate client ID with pub prefix randomly
 client_id = 'Client456'
-# username = 'emqx'
-# password = 'public'
 
 running = False
 
 scanned_tag = -1
 light_intensity = 0
 
+# Subscribe to MQTT Server
 def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
         content = msg.payload.decode()
@@ -44,12 +42,11 @@ def subscribe(client: mqtt_client):
     client.subscribe(topics)
     client.on_message = on_message
 
+# Establish MQTT Connection
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
             subscribe(client)
-#             subscribe(client, "Dashboard/Light/Photo")
-            #print("Connected to MQTT Broker!")
         else:
             print("Failed to connect, return code %d\n", rc)
 
@@ -58,6 +55,7 @@ def connect_mqtt() -> mqtt_client:
     client.connect(broker, port)
     return client
 
+# Runs the MQTT connection
 def run():
     global running
     if not running:

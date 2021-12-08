@@ -13,14 +13,15 @@ import dash_daq as daq
 
 from utils import rfid, read_bluetooth_devices
 
+# Last saved bluetooth reading
 last_content = html.Div(children=[  
     html.Br(),
     html.Div(children=dbc.Table(html.Thead(html.Tr([html.Th("Device ID"), html.Th("RSSI")])), bordered=True))  
 ])
 
+# Widget to display list of devices
 bluetooth_details_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Bluetooth Device Detection", className="card-title", style={'text-align':'center'}),
@@ -31,14 +32,13 @@ bluetooth_details_card = dbc.Card(
                 html.Div(id='bt-check-results', children=last_content),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
 
+# Widget displaying threshold settings
 bluetooth_threshold_card = dbc.Card(
     [
-        # dbc.CardHeader("This is the header"),
         dbc.CardBody(
             [
                 html.H4("Bluetooth Threshold Settings", className="card-title", style={'text-align':'center'}),
@@ -51,7 +51,6 @@ bluetooth_threshold_card = dbc.Card(
                 dbc.Button('Update Threshold', id='bt-change-threshold', color="success", className="me-1"),
             ]
         ),
-        # dbc.CardFooter("This is the footer"),
     ],
     style={"width": "30rem"},
 )
@@ -63,6 +62,7 @@ cards = dbc.Row(
     ]
 )
 
+# Bluetooth page layout
 layout = html.Div([
     cards,
     
@@ -79,6 +79,7 @@ layout = html.Div([
     )
 ])
 
+# Called whenever button is clicked to update threshold
 @app.callback(
     [
         Output("bt-threshold-display-hidden", "children"),
@@ -101,6 +102,7 @@ def update_bt_threshold(n_clicks, value):
 
     return [f"RSSI Threshold: {rfid.get_rssi_threshold()}"]
 
+# Called every interval 
 @app.callback(
     [
         Output("bt-threshold-display", "children"),
@@ -110,6 +112,7 @@ def update_bt_threshold(n_clicks, value):
 def on_interval_update_bt_displays(v):
    return [f"RSSI Threshold: {rfid.get_rssi_threshold()}"]
 
+# Called every interval to update bluetooth devices
 @app.callback(
     [
         Output("bt-check-results", "children"),
@@ -124,9 +127,6 @@ def update_nearby_devices(n_intervals):
     
     if not rfid.is_authorized():
         raise PreventUpdate
-    
-#     if n_clicks == None:
-#         return [last_content, f"Last Checked: {read_bluetooth_devices.get_last_checked_time()}"]
     
     device_information = read_bluetooth_devices.scan_devices()
     device_details = device_information['details']

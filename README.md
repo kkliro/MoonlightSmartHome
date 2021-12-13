@@ -25,7 +25,7 @@ The /Dashboard folder contains all python code related to the Python Dash dashbo
 - /Dashboard/utils/ holds all files (python and javascript) that are used to carry out the functionality of the system.
 
 The /Sketch folder contains the necessary code for the NodeMCU ESP8266.
-- /Sketch/ handles the analog data read from the NodeMCU and publishing to the MQTT broker.
+- /Sketch/Dashboard-MQTT/ handles the analog data read from the NodeMCU and publishing to the MQTT broker.
 
 
 ## Installation

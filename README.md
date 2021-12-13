@@ -1,4 +1,4 @@
-# Moonlight Dashboard
+# Moonlight Smart Home
 
 Moonlight Smart Home, an IoT-based application, is a simplistic smart home system designed to carry out 
 the fundamental functionality of a real-world smart home. 
